@@ -5,7 +5,7 @@ $Authheaders = Get-GraphToken -tenantid $env:Tenantid
 if ([bool]$env:DocumentPartnerTenant -eq $true) {
     $null = $Customers.add([PSCustomObject]@{
         customerId        = $env:TenantID
-        defaultDomainName = $env:ParnterDefaultDomain
+        defaultDomainName = $env:PartnerDefaultDomain
         displayName       = $env:PartnerDisplayName
     })
 }

@@ -200,7 +200,7 @@
                         "permissions": {
                             "keys": [],
                             "secrets": [
-                                "all"
+                                "get"
                             ],
                             "certificates": []
                         }
