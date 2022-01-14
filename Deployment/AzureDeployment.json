@@ -1,0 +1,498 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "baseName": {
+            "defaultValue": "M365Hudu",
+            "type": "string",
+            "metadata": {
+                "description": "Name use as base-template to named the resources deployed in Azure."
+            }
+        },
+        "PeopleLayoutName": {
+            "defaultValue": "People",
+            "type": "string",
+            "metadata": {
+                "description": "The name of the Asset Layout in Hudu used to track People / Users. (Must exist already with a richtext Microsoft 365 field)"
+            }
+        },
+        "CreateUsers": {
+            "defaultValue": "true",
+            "type": "string",
+            "metadata": {
+                "description": "Set to true if you wish to create People / Users in Hudu from M365 if they do not exist."
+            }
+        },
+        "DesktopsName": {
+            "defaultValue": "Desktops / Laptops",
+            "type": "string",
+            "metadata": {
+                "description": "The name of the Asset Layout in Hudu used to track Desktops / Laptops. (Must exist already with a richtext Microsoft 365 field)"
+            }
+        },
+        "MobilesName": {
+            "defaultValue": "Mobile Devices",
+            "type": "string",
+            "metadata": {
+                "description": "The name of the Asset Layout in Hudu used to track Mobile Devices. (Must exist already with a richtext Microsoft 365 field)"
+            }
+        },
+        "CreateDevices": {
+            "defaultValue": "true",
+            "type": "string",
+            "metadata": {
+                "description": "Set to true if you wish to create Desktops / Laptops in Hudu from M365 if they do not exist."
+            }
+        },
+        "CreateMobileDevices": {
+            "defaultValue": "true",
+            "type": "string",
+            "metadata": {
+                "description": "Set to true if you wish to create Mobile Devices in Hudu from M365 if they do not exist."
+            }
+        },
+        "CreateInOverview": {
+            "defaultValue": "true",
+            "type": "string",
+            "metadata": {
+                "description": "Set to true to create all Magic Dashes in an overview company as well."
+            }
+        },
+        "OverviewCompany": {
+            "defaultValue": "Overview - M365",
+            "type": "string",
+            "metadata": {
+                "description": "The name of the overview company to use for Magic Dashes (Must exist already)."
+            }
+        },
+        "importDomains": {
+            "defaultValue": "true",
+            "type": "string",
+            "metadata": {
+                "description": "Set to true to import domains in M365 to Hudu Websites."
+            }
+        },
+        "monitorDomains": {
+            "defaultValue": "true",
+            "type": "string",
+            "metadata": {
+                "description": "Set to enable monitoring on imported domains."
+            }
+        },
+        "DocumentPartnerTenant": {
+            "defaultValue": "true",
+            "type": "string",
+            "metadata": {
+                "description": "Set to true to also document your partner tenant to Hudu."
+            }
+        },
+        "PartnerDefaultDomain": {
+            "defaultValue": "yourdomain.onmicrosoft.com",
+            "type": "string",
+            "metadata": {
+                "description": "Your Partner Tenant's default domain name."
+            }
+        },
+        "PartnerDisplayName": {
+            "defaultValue": "Your Company Name",
+            "type": "string",
+            "metadata": {
+                "description": "Your Partner Tenant's display name."
+            }
+        },
+        "IntuneDesktopDeviceTypes": {
+            "defaultValue": "windowsRT,macMDM",
+            "type": "string",
+            "metadata": {
+                "description": "Endpoint Manager / Intune device types to identify desktops."
+            }
+        },
+        "ExcludeSerials": {
+            "defaultValue": "0,SystemSerialNumber,To Be Filled By O.E.M.,System Serial Number,0123456789,123456789,............",
+            "type": "string",
+            "metadata": {
+                "description": "Serial numbers to ignore and attempt to match on device name instead."
+            }
+        },
+        "customerExclude": {
+            "defaultValue": "Demo Customer,Example Customer,Restricted Customer",
+            "type": "string",
+            "metadata": {
+                "description": "A list of customer display names to skip from the sync."
+            }
+        },
+        "ApplicationId": {
+            "defaultValue": "0000000-0000-0000-000-000000000",
+            "type": "string",
+            "metadata": {
+                "description": "The application ID of your SAM application."
+            }
+        },
+        "ApplicationSecret": {
+            "defaultValue": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+            "type": "string",
+            "metadata": {
+                "description": "The application secret for your SAM application."
+            }
+        },
+        "TenantID": {
+            "defaultValue": "0000000-0000-0000-000-000000000",
+            "type": "string",
+            "metadata": {
+                "description": "Your Partner Tenant ID."
+            }
+        },
+        "RefreshToken": {
+            "defaultValue": "Long Refresh Token",
+            "type": "string",
+            "metadata": {
+                "description": "The long refresh token for your SAM application."
+            }
+        },
+        "ExchangeRefreshToken": {
+            "defaultValue": "Long Exchange Refresh Token",
+            "type": "string",
+            "metadata": {
+                "description": "The long Exchange refresh token for your SAM application."
+            }
+        },
+        "HuduAPIKey": {
+            "defaultValue": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+            "type": "string",
+            "metadata": {
+                "description": "Your Hudu API Key."
+            }
+        },
+        "HuduBaseDomain": {
+            "defaultValue": "https://your.hududomain.com",
+            "type": "string",
+            "metadata": {
+                "description": "Your Hudu Base Domain."
+            }
+        }
+
+    },
+    "variables": {
+        "suffix": "[substring(toLower(uniqueString(resourceGroup().id, resourceGroup().location)),0,5)]",
+        "funcAppName": "[toLower(concat(parameters('baseName'), variables('suffix')))]",
+        "funcStorageName": "[tolower(concat(substring(parameters('baseName'), 0, min(length(parameters('baseName')),16)), 'stg', variables('suffix')))]",
+        "serverFarmName": "[concat(substring(parameters('baseName'), 0, min(length(parameters('baseName')),14)), '-srv-', variables('suffix'))]",
+        "repoURL": "https://github.com/lwhitelock/HuduM365Automation.git",
+        "uniqueResourceNameBase": "[toLower(concat(parameters('baseName'), variables('suffix')))]",
+        "swaName": "[toLower(concat(parameters('baseName'), '-swa-', variables('suffix')))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.KeyVault/vaults",
+            "name": "[variables('uniqueResourceNameBase')]",
+            "apiVersion": "2016-10-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "sku": {
+                    "family": "A",
+                    "name": "standard"
+                },
+                "tenantId": "[subscription().tenantid]",
+                "accessPolicies": [
+                    {
+                        "tenantId": "[subscription().tenantid]",
+                        "objectId": "[reference(resourceId('Microsoft.Web/sites', variables('funcAppName')),'2019-08-01', 'full').identity.principalId]",
+                        "permissions": {
+                            "keys": [],
+                            "secrets": [
+                                "all"
+                            ],
+                            "certificates": []
+                        }
+                    }
+                ],
+                "enabledForDeployment": true,
+                "enabledForDiskEncryption": false,
+                "enabledForTemplateDeployment": true
+            },
+            "resources": [
+                {
+                    "type": "secrets",
+                    "name": "applicationid",
+                    "apiVersion": "2015-06-01",
+                    "properties": {
+                        "contentType": "text/plain",
+                        "value": "[parameters('ApplicationID')]"
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.KeyVault/vaults', variables('uniqueResourceNameBase'))]"
+                    ]
+                },
+                {
+                    "type": "secrets",
+                    "name": "applicationsecret",
+                    "apiVersion": "2015-06-01",
+                    "properties": {
+                        "contentType": "text/plain",
+                        "value": "[parameters('Applicationsecret')]"
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.KeyVault/vaults', variables('uniqueResourceNameBase'))]"
+                    ]
+                },
+                {
+                    "type": "secrets",
+                    "name": "refreshtoken",
+                    "apiVersion": "2015-06-01",
+                    "properties": {
+                        "contentType": "text/plain",
+                        "value": "[parameters('refreshtoken')]"
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.KeyVault/vaults', variables('uniqueResourceNameBase'))]"
+                    ]
+                },
+                {
+                    "type": "secrets",
+                    "name": "tenantid",
+                    "apiVersion": "2015-06-01",
+                    "properties": {
+                        "contentType": "text/plain",
+                        "value": "[parameters('tenantid')]"
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.KeyVault/vaults', variables('uniqueResourceNameBase'))]"
+                    ]
+                },
+                {
+                    "type": "secrets",
+                    "name": "exchangerefreshtoken",
+                    "apiVersion": "2015-06-01",
+                    "properties": {
+                        "contentType": "text/plain",
+                        "value": "[parameters('exchangerefreshtoken')]"
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.KeyVault/vaults', variables('uniqueResourceNameBase'))]"
+                    ]
+                },
+                {
+                    "type": "secrets",
+                    "name": "HuduAPIKey",
+                    "apiVersion": "2015-06-01",
+                    "properties": {
+                        "contentType": "text/plain",
+                        "value": "[parameters('HuduAPIKey')]"
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.KeyVault/vaults', variables('uniqueResourceNameBase'))]"
+                    ]
+                },
+                {
+                    "type": "secrets",
+                    "name": "HuduBaseDomain",
+                    "apiVersion": "2015-06-01",
+                    "properties": {
+                        "contentType": "text/plain",
+                        "value": "[parameters('HuduBaseDomain')]"
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.KeyVault/vaults', variables('uniqueResourceNameBase'))]"
+                    ]
+                }
+            ],
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', variables('funcAppName'))]"
+            ]
+        },
+        {
+            "apiVersion": "2015-08-01",
+            "type": "Microsoft.Web/sites",
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "name": "[variables('funcAppName')]",
+            "location": "[resourceGroup().location]",
+            "kind": "functionapp",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms',variables('serverFarmName'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('funcStorageName'))]"
+            ],
+            "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('serverFarmName'))]",
+                "siteConfig": {
+                    "Use32BitWorkerProcess": false,
+                    "powerShellVersion": "~7",
+                    "appSettings": [
+                        {
+                            "name": "AzureWebJobsDashboard",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('funcStorageName'), ';AccountKey=', listKeys(variables('funcStorageName'),'2015-05-01-preview').key1)]"
+                        },
+                        {
+                            "name": "AzureWebJobsStorage",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('funcStorageName'), ';AccountKey=', listKeys(variables('funcStorageName'),'2015-05-01-preview').key1)]"
+                        },
+                        {
+                            "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('funcStorageName'), ';AccountKey=', listKeys(variables('funcStorageName'),'2015-05-01-preview').key1)]"
+                        },
+                        {
+                            "name": "WEBSITE_CONTENTSHARE",
+                            "value": "[variables('funcAppName')]"
+                        },
+                        {
+                            "name": "FUNCTIONS_EXTENSION_VERSION",
+                            "value": "~3"
+                        },
+                        {
+                            "name": "ApplicationID",
+                            "value": "[concat('@Microsoft.KeyVault(SecretUri=https://',variables('uniqueResourceNameBase'), '.vault.azure.net/secrets/ApplicationId)')]"
+                        },
+                        {
+                            "name": "ApplicationSecret",
+                            "value": "[concat('@Microsoft.KeyVault(SecretUri=https://',variables('uniqueResourceNameBase'), '.vault.azure.net/secrets/ApplicationSecret)')]"
+                        },
+                        {
+                            "name": "RefreshToken",
+                            "value": "[concat('@Microsoft.KeyVault(SecretUri=https://',variables('uniqueResourceNameBase'), '.vault.azure.net/secrets/RefreshToken)')]"
+                        },
+                        {
+                            "name": "ExchangeRefreshtoken",
+                            "value": "[concat('@Microsoft.KeyVault(SecretUri=https://',variables('uniqueResourceNameBase'), '.vault.azure.net/secrets/ExchangeRefreshToken)')]"
+                        },
+                        {
+                            "name": "TenantID",
+                            "value": "[concat('@Microsoft.KeyVault(SecretUri=https://',variables('uniqueResourceNameBase'), '.vault.azure.net/secrets/tenantid)')]"
+                        },
+                        {
+                            "name": "HuduAPIKey",
+                            "value": "[concat('@Microsoft.KeyVault(SecretUri=https://',variables('uniqueResourceNameBase'), '.vault.azure.net/secrets/HuduAPIKey)')]"
+                        },
+                        {
+                            "name": "HuduBaseDomain",
+                            "value": "[concat('@Microsoft.KeyVault(SecretUri=https://',variables('uniqueResourceNameBase'), '.vault.azure.net/secrets/HuduBaseDomain)')]"
+                        },
+                        {
+                            "name": "FUNCTIONS_WORKER_RUNTIME",
+                            "value": "powershell"
+                        },
+                        {
+                            "name": "PeopleLayoutName",
+                            "value": "[parameters('PeopleLayoutName')]"
+                        },
+                        {
+                            "name": "CreateUsers",
+                            "value": "[parameters('CreateUsers')]"
+                        },
+                        {
+                            "name": "DesktopsName",
+                            "value": "[parameters('DesktopsName')]"
+                        },
+                        {
+                            "name": "MobilesName",
+                            "value": "[parameters('MobilesName')]"
+                        },
+                        {
+                            "name": "CreateDevices",
+                            "value": "[parameters('CreateDevices')]"
+                        },
+                        {
+                            "name": "CreateMobileDevices",
+                            "value": "[parameters('CreateMobileDevices')]"
+                        },
+                        {
+                            "name": "CreateInOverview",
+                            "value": "[parameters('CreateInOverview')]"
+                        },
+                        {
+                            "name": "OverviewCompany",
+                            "value": "[parameters('OverviewCompany')]"
+                        },
+                        {
+                            "name": "importDomains",
+                            "value": "[parameters('importDomains')]"
+                        },
+                        {
+                            "name": "monitorDomains",
+                            "value": "[parameters('monitorDomains')]"
+                        },
+                        {
+                            "name": "DocumentPartnerTenant",
+                            "value": "[parameters('DocumentPartnerTenant')]"
+                        },
+                        {
+                            "name": "PartnerDefaultDomain",
+                            "value": "[parameters('PartnerDefaultDomain')]"
+                        },
+                        {
+                            "name": "PartnerDisplayName",
+                            "value": "[parameters('PartnerDisplayName')]"
+                        },
+                        {
+                            "name": "IntuneDesktopDeviceTypes",
+                            "value": "[parameters('IntuneDesktopDeviceTypes')]"
+                        },
+                        {
+                            "name": "ExcludeSerials",
+                            "value": "[parameters('ExcludeSerials')]"
+                        },
+                        {
+                            "name": "customerExclude",
+                            "value": "[parameters('customerExclude')]"
+                        }
+                    ]
+                }
+            },
+            "resources": [
+                {
+                    "apiVersion": "2015-08-01",
+                    "name": "web",
+                    "type": "sourcecontrols",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites/', variables('funcAppName'))]"
+                    ],
+                    "properties": {
+                        "RepoUrl": "[variables('repoURL')]",
+                        "branch": "master",
+                        "publishRunbook": true,
+                        "IsManualIntegration": true
+                    }
+                }
+            ]
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2018-07-01",
+            "name": "[variables('funcStorageName')]",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "funStorageName"
+            },
+            "sku": {
+                "name": "Standard_LRS"
+            },
+            "kind": "StorageV2"
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2018-02-01",
+            "name": "[variables('serverFarmName')]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Y1",
+                "tier": "Dynamic",
+                "size": "Y1",
+                "family": "Y",
+                "capacity": 0
+            },
+            "properties": {
+                "perSiteScaling": false,
+                "maximumElasticWorkerCount": 1,
+                "isSpot": false,
+                "reserved": false,
+                "isXenon": false,
+                "hyperV": false,
+                "targetWorkerCount": 0,
+                "targetWorkerSizeId": 0,
+                "name": "[variables('serverFarmName')]",
+                "computeMode": "Dynamic"
+            }
+        }        
+    ],
+    "outputs": {}
+}
