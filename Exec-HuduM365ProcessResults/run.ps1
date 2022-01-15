@@ -1,4 +1,4 @@
-param($OutJSON)
+param($Outputs)
 function Get-AdaptiveColumn($Strings, $Title) {
     [System.Collections.Generic.List[PSCustomObject]]$Items = @()
     $Items.Add([PSCustomObject]@{
@@ -23,9 +23,7 @@ function Get-AdaptiveColumn($Strings, $Title) {
     }
 }
 
-Write-Host "Complete Results: $($OutJSON)"
-
-$Outputs = $OutJSON | convertfrom-json -depth 100
+Write-Host "$($Outputs | convertto-json | Out-String)"
 
 $WebhookURL = $env:WebhookURL
 

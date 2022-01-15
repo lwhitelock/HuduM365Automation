@@ -176,6 +176,27 @@
             "metadata": {
                 "description": "An incoming Teaams Webhook URL to recieve Sync Errors and Reports"
             }
+        },
+        "PSAUserURL": {
+            "defaultValue": "https://your.halodomain.com/customers?mainview=user&inactive=false&userid=",
+            "type": "string",
+            "metadata": {
+                "description": "The URL used to link a user in Hudu to your PSA (Only Halo supported at present)"
+            }
+        },
+        "RMMDeviceURL": {
+            "defaultValue": "https://merlotrmm.centrastage.net/device/",
+            "type": "string",
+            "metadata": {
+                "description": "The URL used to link a device to your RMM (Only Datto RMM support at present)"
+            }
+        },
+        "RMMRemoteURL": {
+            "defaultValue": "https://merlot.centrastage.net/csm/remote/rto/",
+            "type": "string",
+            "metadata": {
+                "description": "The URL used to launch a remote session on a device in your RMM (Only Datto RMM support at present)"
+            }
         }
 
     },
@@ -445,6 +466,18 @@
                         {
                             "name": "WebhookURL",
                             "value": "[parameters('WebhookURL')]"
+                        },
+                        {
+                            "name": "PSAUserURL",
+                            "value": "[parameters('PSAUserURL')]"
+                        },
+                        {
+                            "name": "RMMDeviceURL",
+                            "value": "[parameters('RMMDeviceURL')]"
+                        },
+                        {
+                            "name": "RMMRemoteURL",
+                            "value": "[parameters('RMMRemoteURL')]"
                         }
                     ]
                 }

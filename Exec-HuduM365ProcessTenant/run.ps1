@@ -28,6 +28,9 @@ $ExcludeSerials = $env:ExcludeSerials -split ','
 $LicenseLookup = Get-LicenseLookup
 $AssignedMap = Get-AssignedMap
 $AssignedNameMap = Get-AssignedNameMap
+$PSAUserURL = $env:PSAUserURL
+$RMMDeviceURL = $env:RMMDeviceURL
+$RMMRemoteURL = $env:RMMRemoteURL
 
 try {
     $hududomain = Get-HuduWebsites -name "https://$defaultdomain" -ea stop
@@ -645,13 +648,33 @@ try {
                         $UserDevicesDetailsBlock = $null
                     }
 
-                    $UserBody = "<div>$AssignedPlansBlock<br /><div class=`"nasa__content`">$($UserOverviewBlock)$($UserMailDetailsBlock)$($OneDriveBlock)$($UserMailSettingsBlock)$($UserPoliciesBlock)</div><div class=`"nasa__content`">$($UserDevicesDetailsBlock)</div><div class=`"nasa__content`">$($UserGroupsBlock)</div></div>"
+                    $HuduUser = $People | where-object { $_.primary_mail -eq $user.UserPrincipalName }
+
+                    [System.Collections.Generic.List[PSCustomObject]]$UserLinksFormatted = @()
+                    $UserLinksFormatted.add((Get-LinkBlock -URL "https://aad.portal.azure.com/$($Customer.defaultDomainName)/#blade/Microsoft_AAD_IAM/UserDetailsMenuBlade/Profile/userId/$($User.id)" -Icon "fas fa-users-cog" -Title "Azure AD"))
+                    $UserLinksFormatted.add((Get-LinkBlock -URL "https://aad.portal.azure.com/$($Customer.defaultDomainName)/#blade/Microsoft_AAD_IAM/UserDetailsMenuBlade/SignIns/userId/$($User.id)" -Icon "fas fa-history" -Title "Sign Ins"))
+                    $UserLinksFormatted.add((Get-LinkBlock -URL "https://admin.teams.microsoft.com/users/$($User.id)/account?delegatedOrg=$($Customer.defaultDomainName)" -Icon "fas fa-users" -Title "Teams Admin"))
+                    $UserLinksFormatted.add((Get-LinkBlock -URL "https://endpoint.microsoft.com/$($Customer.defaultDomainName)/#blade/Microsoft_AAD_IAM/UserDetailsMenuBlade/Profile/userId/$($User.ID)" -Icon "fas fa-laptop" -Title "EPM (User)"))
+                    $UserLinksFormatted.add((Get-LinkBlock -URL "https://endpoint.microsoft.com/$($Customer.defaultDomainName)/#blade/Microsoft_AAD_IAM/UserDetailsMenuBlade/Devices/userId/$($User.ID)" -Icon "fas fa-laptop" -Title "EPM (Devices)"))
+
+                    if ($HuduUser) {
+                        $HaloCard = $HuduUser.cards | where-object {$_.integrator_name -eq 'halo'}
+                        if ($HaloCard) {
+                            $UserLinksFormatted.add((Get-LinkBlock -URL "$($PSAUserUrl)$($HaloCard.sync_id)" -Icon "far fa-id-card" -Title "Halo PSA"))
+                        }
+                        
+                    }
+
+                    $UserLinksBlock = "<div>Management Links</div><div class='o365'>$($UserLinksFormatted -join '')</div>"
+
+
+                    $UserBody = "<div>$AssignedPlansBlock<br />$UserLinksBlock<br /><div class=`"nasa__content`">$($UserOverviewBlock)$($UserMailDetailsBlock)$($OneDriveBlock)$($UserMailSettingsBlock)$($UserPoliciesBlock)</div><div class=`"nasa__content`">$($UserDevicesDetailsBlock)</div><div class=`"nasa__content`">$($UserGroupsBlock)</div></div>"
 
                     $UserAssetFields = @{
                         microsoft_365 = $UserBody
                     }
 
-                    $HuduUser = $People | where-object { $_.primary_mail -eq $user.UserPrincipalName }
+                    
                     $HuduUserCount = ($HuduUser | measure-object).count
                     if ($HuduUserCount -eq 1) {
                         $null = Set-HuduAsset -asset_id $HuduUser.id -name $HuduUser.name -company_id $company_id -asset_layout_id $PeopleLayout.id -fields $UserAssetFields
@@ -686,7 +709,7 @@ try {
         foreach ($Device in $Devices) {
             try {
                 [System.Collections.Generic.List[PSCustomObject]]$DeviceOverviewFormatted = @()
-                $DeviceOverviewFormatted.add($(Get-FormatedField -Title 'Device Name'  -Value "<a target='_blank' href=https://endpoint.microsoft.com/whitelock.org.uk/#blade/Microsoft_Intune_Devices/DeviceSettingsBlade/overview/mdmDeviceId/$($Device.id)>$($Device.deviceName)</a>"))
+                $DeviceOverviewFormatted.add($(Get-FormatedField -Title 'Device Name'  -Value "$($Device.deviceName)"))
                 $DeviceOverviewFormatted.add($(Get-FormatedField -Title 'User'  -Value "$($Device.userDisplayName)"))
                 $DeviceOverviewFormatted.add($(Get-FormatedField -Title 'User Email'  -Value "$($Device.userPrincipalName)"))
                 $DeviceOverviewFormatted.add($(Get-FormatedField -Title 'Owner'  -Value "$($Device.ownerType)"))
@@ -767,7 +790,21 @@ try {
                     $HuduDevice = $HuduDevices | Where-Object { $_.primary_serial -eq $device.serialNumber }
                 } 
 
-                $DeviceIntuneDetailshtml = "<div><div class=`"nasa__content`">$($DeviceOverviewBlock)$($DeviceHardwareBlock)$($DeviceEnrollmentBlock)$($DevicePolicyBlock)$($DeviceAppsBlock)$($DeviceGroupsBlock)</div></div>"
+                [System.Collections.Generic.List[PSCustomObject]]$DeviceLinksFormatted = @()
+                $DeviceLinksFormatted.add((Get-LinkBlock -URL "https://endpoint.microsoft.com/$($Customer.defaultDomainName)/#blade/Microsoft_Intune_Devices/DeviceSettingsBlade/overview/mdmDeviceId/$($Device.id)" -Icon "fas fa-laptop" -Title "Endpoint Manager"))
+
+                if ($HuduDevice) {
+                    $DRMMCard = $HuduDevice.cards | where-object {$_.integrator_name -eq 'dattormm'}
+                    if ($DRMMCard) {
+                        $DeviceLinksFormatted.add((Get-LinkBlock -URL "$($RMMDeviceURL)$($DRMMCard.data.id)" -Icon "fas fa-laptop-code" -Title "Datto RMM"))
+                        $DeviceLinksFormatted.add((Get-LinkBlock -URL "$($RMMRemoteURL)$($DRMMCard.data.id)" -Icon "fas fa-desktop" -Title "Datto RMM Remote"))
+                    }
+                    
+                }
+
+                $DeviceLinksBlock = "<div>Management Links</div><div class='o365'>$($DeviceLinksFormatted -join '')</div>"
+
+                $DeviceIntuneDetailshtml = "<div><div>$DeviceLinksBlock<br /><div class=`"nasa__content`">$($DeviceOverviewBlock)$($DeviceHardwareBlock)$($DeviceEnrollmentBlock)$($DevicePolicyBlock)$($DeviceAppsBlock)$($DeviceGroupsBlock)</div></div>"
 
                 $DeviceAssetFields = @{
                     microsoft_365 = $DeviceIntuneDetailshtml
@@ -860,4 +897,4 @@ try {
     $CompanyResult.Errors.add("Company: A fatal error occured: $_")
 }
     
-$CompanyResult
+return $CompanyResult

@@ -1,7 +1,7 @@
 {
   "bindings": [
     {
-      "name": "OutJSON",
+      "name": "Outputs",
       "type": "activityTrigger",
       "direction": "in"
     }

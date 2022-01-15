@@ -128,6 +128,34 @@ function Get-FormattedBlock ($Heading, $Body) {
 "@
 }
 
+function Get-LinkBlock($URL, $Icon, $Title) {
+    return "<div class='o365__app' style='text-align:center'><a href=$URL target=_blank><h3><i class=`"$Icon`">&nbsp;&nbsp;&nbsp;</i>$Title</h3></a></div>"
+}
+
+function Get-AdaptiveColumn($Strings, $Title) {
+    [System.Collections.Generic.List[PSCustomObject]]$Items = @()
+    $Items.Add([PSCustomObject]@{
+            type   = "TextBlock"
+            weight = "Bolder"
+            text   = $Title
+        })
+
+    foreach ($String in $Strings) {
+        $Items.Add([PSCustomObject]@{
+                type      = 'TextBlock'
+
+                separator = $true
+                text      = $String
+            })
+    }
+
+    return [PSCustomObject]@{
+        type  = 'Column'
+        items = $Items
+        width = 'stretch'
+    }
+}
+
 function Get-LicenseLookup {
     $LicenseLookup = @{
         'SPZA_IW'                                 = 'App Connect Iw'
