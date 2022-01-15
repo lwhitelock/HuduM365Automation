@@ -8,5 +8,7 @@ $ProcessingCompanies = foreach ($Customer in $Customers){
 
 $Outputs = Wait-ActivityFunction -Task $ProcessingCompanies
 
-Write-Host "Complete: $($Outputs | Where-Object {$_.Errors.count -gt 0}|convertto-json -depth 100 | out-string)"
+$OutJSON = $Outputs | convertto-json -depth 100 | out-string
+
+$null = Invoke-DurableActivity -FunctionName 'Exec-HuduM365ProcessResults' -Input $OutJSON
 

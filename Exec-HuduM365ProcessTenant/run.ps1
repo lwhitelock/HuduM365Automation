@@ -9,6 +9,7 @@ $defaultdomain = $customer.DefaultDomainName
 $CompanyResult = [PSCustomObject]@{
     Name   = $customer.DisplayName
     Users  = 0
+    Devices = 0
     Errors = [System.Collections.Generic.List[string]]@()
 }
 
@@ -54,7 +55,15 @@ try {
         $MobilesLayout = Get-HuduAssetLayouts -name $env:MobilesName
         $HuduMobileDevices = Get-HuduAssets -companyid $company_id -assetlayoutid $MobilesLayout.id
 
-        $HuduDevices = $HuduDesktopDevices + $HuduMobileDevices
+        try {
+            $HuduDevices = $HuduDesktopDevices + $HuduMobileDevices
+        } catch {
+            try {
+                $HuduDevices = $HuduMobileDevices + $HuduDesktopDevices
+            } catch {
+                $HuduDevices = $Null
+            }
+        }
 
         $CustomerLinks = "<div class=`"nasa__content`"> 
         <div class=`"nasa__block`"><button class=`"button`" onclick=`"window.open('https://portal.office.com/Partner/BeginClientSession.aspx?CTID=$($customer.CustomerId)&CSDEST=o365admincenter')`"><h3><i class=`"fas fa-cogs`">&nbsp;&nbsp;&nbsp;</i>M365 Admin Portal</h3></button></div>
@@ -128,6 +137,8 @@ try {
 
         $Users = Get-BulkResultByID -Results $TenantResults -ID 'Users'
         $licensedUsers = $Users | where-object { $null -ne $_.AssignedLicenses.SkuId } | Sort-Object UserPrincipalName
+
+        $CompanyResult.users = ($licensedUsers | measure-object).count
 
         $AllRoles = Get-BulkResultByID -Results $TenantResults -ID 'AllRoles'
         $SelectList = 'id', 'displayName', 'userPrincipalName'
@@ -230,6 +241,7 @@ try {
         }
 
         $devices = Get-BulkResultByID -Results $TenantResults -ID 'Devices'
+        $CompanyResult.Devices = ($Devices | measure-object).count
 
         $DeviceCompliancePolicies = Get-BulkResultByID -Results $TenantResults -ID 'DeviceCompliancePolicies'
 
@@ -314,7 +326,6 @@ try {
             if ($CAPolicy.conditions.users.includeUsers -contains 'All') {
                 $Users | foreach-object { $null = $CAMembers.add($_.id) }
             } else {
-                # Add any specific all users to the array
                 $CAPolicy.conditions.users.includeUsers | foreach-object { $null = $CAMembers.add($_) }
             }
 
@@ -332,17 +343,19 @@ try {
 
             $CAMembers = $CAMembers | select-object -unique
 
-            $CAPolicy.conditions.users.excludeUsers | foreach-object { $null = $CAMembers.remove($_) }
+            if ($CAMembers) {
+                $CAPolicy.conditions.users.excludeUsers | foreach-object { $null = $CAMembers.remove($_) }
 
-            foreach ($CAEGroup in $CAPolicy.conditions.users.excludeGroups) {
-                foreach ($Member in ($Groups | where-object { $_.id -eq $CAEGroup }).Members) {
-                    $null = $CAMembers.remove($Member.id)
+                foreach ($CAEGroup in $CAPolicy.conditions.users.excludeGroups) {
+                    foreach ($Member in ($Groups | where-object { $_.id -eq $CAEGroup }).Members) {
+                        $null = $CAMembers.remove($Member.id)
+                    }
                 }
-            }
 
-            foreach ($CAIRole in $CAPolicy.conditions.users.excludeRoles) {
-                foreach ($Member in ($Roles | where-object { $_.id -eq $CAERole }).Members) {
-                    $null = $CAMembers.remove($Member.id)
+                foreach ($CAIRole in $CAPolicy.conditions.users.excludeRoles) {
+                    foreach ($Member in ($Roles | where-object { $_.id -eq $CAERole }).Members) {
+                        $null = $CAMembers.remove($Member.id)
+                    }
                 }
             }
 
@@ -423,9 +436,9 @@ try {
                     $StatsRequest = $MailboxStatsFull | where-object { $_.'User Principal Name' -eq $User.UserPrincipalName }
 
                     try {
-                        $PermsRequest = New-GraphGetRequest -Headers $ExchangeAuthHeaders -uri "https://outlook.office365.com/adminapi/beta/$($tenantfilter)/Mailbox('$($User.UserPrincipalName)')/MailboxPermission" -Tenantid $tenantfilter -scope ExchangeOnline -noPagination $true
+                        $PermsRequest = New-GraphGetRequest -Headers $ExchangeAuthHeaders -uri "https://outlook.office365.com/adminapi/beta/$($tenantfilter)/Mailbox('$($User.ID)')/MailboxPermission" -Tenantid $tenantfilter -scope ExchangeOnline -noPagination $true
                     } catch {
-                        $CompanyResult.Errors.add("User $($User.UserPrincipalName): Unable to fetch Mailbox Statistic Details $_")
+                        $PermsRequest = $null
                     }
 
                     $ParsedPerms = foreach ($Perm in $PermsRequest) {
@@ -569,6 +582,7 @@ try {
                     [System.Collections.Generic.List[PSCustomObject]]$UserOverviewFormatted = @()
                     $UserOverviewFormatted.add($(Get-FormatedField -Title 'User Name'  -Value "$($User.displayName)"))
                     $UserOverviewFormatted.add($(Get-FormatedField -Title 'User Principal Name'  -Value "$($User.userPrincipalName)"))
+                    $UserOverviewFormatted.add($(Get-FormatedField -Title 'User ID'  -Value "$($User.ID)"))
                     $UserOverviewFormatted.add($(Get-FormatedField -Title 'User Enabled'  -Value "$($User.accountEnabled)"))
                     $UserOverviewFormatted.add($(Get-FormatedField -Title 'Job Title'  -Value "$($User.jobTitle)"))
                     $UserOverviewFormatted.add($(Get-FormatedField -Title 'Mobile Phone'  -Value "$($User.mobilePhone)"))
@@ -647,7 +661,7 @@ try {
                             $HuduUser = (New-HuduAsset -name $User.DisplayName -company_id $company_id -asset_layout_id $PeopleLayout.id -fields $UserAssetFields -primary_mail $user.UserPrincipalName).asset
                         }
                     } else {
-                        $CompanyResult.Errors.add("User $($User.UserPrincipalName): Multiple Users Matched to email address in Hudu $_")
+                        $CompanyResult.Errors.add("User $($User.UserPrincipalName): Multiple Users Matched to email address in Hudu: ($($HuduUser.name -join ', ') - $($($HuduUser.id -join ', '))) $_")
                     }
 
 
@@ -763,7 +777,7 @@ try {
                     if (($HuduDevice | measure-object).count -eq 1) {                                  
                         $null = Set-HuduAsset -asset_id $HuduDevice.id -name $HuduDevice.name -company_id $company_id -asset_layout_id $HuduDevice.asset_layout_id -fields $DeviceAssetFields -PrimarySerial $Device.serialNumber
                     } else {
-                        $CompanyResult.Errors.add("Device $($HuduDevice.name): Multiple devices matched on name or serial")
+                        $CompanyResult.Errors.add("Device $($HuduDevice.name): Multiple devices matched on name or serial ($($device.serialNumber -join ', '))")
                     }                    
                 } else {
                     if ($device.deviceType -in $IntuneDesktopDeviceTypes) {
@@ -774,9 +788,7 @@ try {
                         $DeviceCreation = $CreateMobileDevices
                     }
                     if ($DeviceCreation -eq $true) {
-                        # Create New Device
                         $HuduDevice = (New-HuduAsset -name $device.deviceName -company_id $company_id -asset_layout_id $DeviceLayoutID -fields $DeviceAssetFields -PrimarySerial $Device.serialNumber).asset
-
                         $HuduUser = $People | where-object { $_.primary_mail -eq $Device.userPrincipalName }
                         if ($HuduUser) {
                             try {

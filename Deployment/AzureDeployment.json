@@ -169,6 +169,13 @@
             "metadata": {
                 "description": "Your Hudu Base Domain."
             }
+        },
+        "WebhookURL": {
+            "defaultValue": "https://yourtenant.webhook.office.com/webhookb2/dxxxxxxxxxxxxx/IncomingWebhook/xxxxxxxxxx/0000-00000-0000000",
+            "type": "string",
+            "metadata": {
+                "description": "An incoming Teaams Webhook URL to recieve Sync Errors and Reports"
+            }
         }
 
     },
@@ -434,6 +441,10 @@
                         {
                             "name": "customerExclude",
                             "value": "[parameters('customerExclude')]"
+                        },
+                        {
+                            "name": "WebhookURL",
+                            "value": "[parameters('WebhookURL')]"
                         }
                     ]
                 }
