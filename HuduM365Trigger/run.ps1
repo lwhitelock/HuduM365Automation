@@ -2,8 +2,7 @@ using namespace System.Net
 
 param($Request, $TriggerMetadata)
 
-$FunctionName = $Request.Params.FunctionName
-$InstanceId = Start-DurableOrchestration -FunctionName $FunctionName
+$InstanceId = Start-DurableOrchestration -FunctionName 'HuduM365Orchestrator'
 Write-Host "Started orchestration with ID = '$InstanceId'"
 
 $Response = New-DurableOrchestrationCheckStatusResponse -Request $Request -InstanceId $InstanceId

@@ -6,7 +6,7 @@ This is an Azure Function which will syncronise between Microsoft 365 and Hudu.
 This project utilises some of the helper fuctions from the CIPP project https://github.com/KelvinTegelaar/CIPP and it licensed under the same license.
 
 ### Installation
-If you wish to customise the code you can fork this repository and then deploy to Azure. If you would like to use the default version you can deploy it with this button
+If you wish to customise the code you can fork this repository and then deploy to Azure. If you would like to use the default version which will run the syncronisation daily at midnight, you can deploy it with this button:
 
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flwhitelock%2FHuduM365Automation%2Fmaster%2FDeployment%2FAzureDeployment.json)
 
@@ -45,3 +45,20 @@ If you wish to customise the code you can fork this repository and then deploy t
 |monitorDomains|Set to enable monitoring on imported domains.|
 |IntuneDesktopDeviceTypes|Endpoint Manager / Intune device types to identify desktops. All others will be treated as mobile devices|
 |ExcludeSerials|Serial numbers to ignore and attempt to match on device name instead. Add any generic serials that might apply to multiple devices|
+
+#### Running the function
+##### Automatically
+By default the function will run every day at midnight. It will send a report to your Teams Webhook URL once it completes.
+
+##### Manually
+To run the function manually you can use this process:
+1. Browse to the Azure Function app in the Azure Portal. It will be named something like m365huduahg45e depending on what you set the base name to
+2. Select functions on the left
+3. Click on the HuduM365Trigger function
+4. Click on the Get Function URL button
+5. Paste the URL into a browser. You should recieve a JSON response. 
+6. To check the status you can copy and paste the statusQueryGetUri into a browser.
+
+##### Debugging
+At the end of the function running a report will be sent to Teams. This should give you details on issues that need to be fixed.
+If you have issues the easiest way to debug is to use VSCode with the Azure Functions extension. If you click on theAzure logo in the left and login, you can then find your function app from the list. Right click on the function and choose start streaming logs.
