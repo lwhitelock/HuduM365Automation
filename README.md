@@ -3,7 +3,7 @@
 This is an Azure Function which will syncronise between Microsoft 365 and Hudu.
 
 ### Copyright
-This project utilises some of the helper fuctions from the CIPP project https://github.com/KelvinTegelaar/CIPP and it licensed under the same license.
+This project utilizes some of the helper functions written by Kelvin Tegelaar from the CIPP project https://github.com/KelvinTegelaar/CIPP and is licensed under the same terms.
 
 ### Requirements
 For this script you will need
