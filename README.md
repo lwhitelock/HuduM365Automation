@@ -26,8 +26,9 @@ For this script you will need
 
 3. Hudu API Keys.
 4. The names of the Hudu asset types for People, Devices and Mobile devices in Hudu.
-5. An overview company created and the name of it in Hudu if you wish to use that feature.
-6. Links to your PSA / RMM if using a supported tool (Currently Halo PSA and Datto RMM).
+5. A field called 'Microsoft 365' of type 'RichText' added to each of the above asset layouts
+6. An overview company created and the name of it in Hudu if you wish to use that feature.
+7. Links to your PSA / RMM if using a supported tool (Currently Halo PSA and Datto RMM).
 
 ### Installation
 If you wish to customise the code you can fork this repository and then deploy to Azure. If you would like to use the default version which will run the syncronisation daily at midnight, you can deploy it with this button:
