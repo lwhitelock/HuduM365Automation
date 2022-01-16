@@ -3,7 +3,7 @@
 This is an Azure Function which will syncronise between Microsoft 365 and Hudu. For more details please see my blog post here: https://mspp.io/hudu-microsoft-365-integration-and-updated-magic-dash-v3/
 
 ### Copyright
-This project utilizes some of the helper functions written by Kelvin Tegelaar from the CIPP project https://github.com/KelvinTegelaar/CIPP and is licensed under the same terms.
+This project utilizes some of the helper functions and approaches written by Kelvin Tegelaar from the CIPP project https://github.com/KelvinTegelaar/CIPP and is licensed under the same terms.
 
 ### Requirements
 For this script you will need
