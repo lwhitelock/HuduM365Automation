@@ -5,6 +5,28 @@ This is an Azure Function which will syncronise between Microsoft 365 and Hudu.
 ### Copyright
 This project utilises some of the helper fuctions from the CIPP project https://github.com/KelvinTegelaar/CIPP and it licensed under the same license.
 
+### Requirements
+For this script you will need
+1. A configured M365 Partner SAM Application. To set this up I recommend you follow this guide https://www.gavsto.com/secure-application-model-for-the-layman-and-step-by-step/
+2. The following permissions added to your SAM application and granted admin consent:
+| Permission | Type |
+|--|--|
+|Application.Read.All|Application + Delegated|
+|AuditLog.Read.All|Delegated|
+|DeviceManagementApps.Read.All|Application + Delegated|
+|DeviceManagementConfiguration.Read.All|Application + Delegated|
+|DeviceManagementManagedDevices.Read.All|Application + Delegated|
+|Directory.Read.All|Application|
+|Group.Read.All|Application + Delegated|
+|Organization.Read.All|Application + Delegated|
+|Policy.Read.All|Application + Delegated|
+|Reports.Read.All|Application + Delegated|
+|SecurityEvents.Read.All|Application + Delegated|
+3. Hudu API Keys.
+4. The names of the Hudu asset types for People, Devices and Mobile devices in Hudu.
+5. An overview company created and the name of it in Hudu if you wish to use that feature.
+6. Links to your PSA / RMM if using a supported tool (Currently Halo PSA and Datto RMM).
+
 ### Installation
 If you wish to customise the code you can fork this repository and then deploy to Azure. If you would like to use the default version which will run the syncronisation daily at midnight, you can deploy it with this button:
 
