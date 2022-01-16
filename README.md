@@ -9,6 +9,7 @@ This project utilises some of the helper fuctions from the CIPP project https://
 For this script you will need
 1. A configured M365 Partner SAM Application. To set this up I recommend you follow this guide https://www.gavsto.com/secure-application-model-for-the-layman-and-step-by-step/
 2. The following permissions added to your SAM application and granted admin consent:
+
 | Permission | Type |
 |--|--|
 |Application.Read.All|Application + Delegated|
@@ -22,6 +23,7 @@ For this script you will need
 |Policy.Read.All|Application + Delegated|
 |Reports.Read.All|Application + Delegated|
 |SecurityEvents.Read.All|Application + Delegated|
+
 3. Hudu API Keys.
 4. The names of the Hudu asset types for People, Devices and Mobile devices in Hudu.
 5. An overview company created and the name of it in Hudu if you wish to use that feature.
