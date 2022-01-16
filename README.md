@@ -25,10 +25,11 @@ For this script you will need
 |SecurityEvents.Read.All|Application + Delegated|
 
 3. Hudu API Keys.
-4. The names of the Hudu asset types for People, Devices and Mobile devices in Hudu.
-5. A field called 'Microsoft 365' of type 'RichText' added to each of the above asset layouts
-6. An overview company created and the name of it in Hudu if you wish to use that feature.
-7. Links to your PSA / RMM if using a supported tool (Currently Halo PSA and Datto RMM).
+4. M365 to Hudu Tenant mapping completed (Each default domain needs to be setup as a customer under the relevant tenant this script will help with that https://github.com/lwhitelock/HuduAutomation/blob/main/Hudu-M365-Links.ps1)
+5. The names of the Hudu asset types for People, Devices and Mobile devices in Hudu.
+6. A field called 'Microsoft 365' of type 'RichText' added to each of the above asset layouts
+7. An overview company created and the name of it in Hudu if you wish to use that feature.
+8. Links to your PSA / RMM if using a supported tool (Currently Halo PSA and Datto RMM).(If you would like me to add support to your PSA / RMM please let me know the URL format to open a link to a user / device and the location in the .card data from the Hudu API where the relevant ID that needs to be passed into the URL is stored)
 
 ### Installation
 If you wish to customise the code you can fork this repository and then deploy to Azure. If you would like to use the default version which will run the syncronisation daily at midnight, you can deploy it with this button:
