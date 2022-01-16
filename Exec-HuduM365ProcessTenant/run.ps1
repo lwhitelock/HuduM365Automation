@@ -7,10 +7,10 @@ $defaultdomain = $customer.DefaultDomainName
 
 
 $CompanyResult = [PSCustomObject]@{
-    Name   = $customer.DisplayName
-    Users  = 0
+    Name    = $customer.DisplayName
+    Users   = 0
     Devices = 0
-    Errors = [System.Collections.Generic.List[string]]@()
+    Errors  = [System.Collections.Generic.List[string]]@()
 }
 
 $PeopleLayoutName = $env:PeopleLayoutName
@@ -658,7 +658,7 @@ try {
                     $UserLinksFormatted.add((Get-LinkBlock -URL "https://endpoint.microsoft.com/$($Customer.defaultDomainName)/#blade/Microsoft_AAD_IAM/UserDetailsMenuBlade/Devices/userId/$($User.ID)" -Icon "fas fa-laptop" -Title "EPM (Devices)"))
 
                     if ($HuduUser) {
-                        $HaloCard = $HuduUser.cards | where-object {$_.integrator_name -eq 'halo'}
+                        $HaloCard = $HuduUser.cards | where-object { $_.integrator_name -eq 'halo' }
                         if ($HaloCard) {
                             $UserLinksFormatted.add((Get-LinkBlock -URL "$($PSAUserUrl)$($HaloCard.sync_id)" -Icon "far fa-id-card" -Title "Halo PSA"))
                         }
@@ -794,7 +794,7 @@ try {
                 $DeviceLinksFormatted.add((Get-LinkBlock -URL "https://endpoint.microsoft.com/$($Customer.defaultDomainName)/#blade/Microsoft_Intune_Devices/DeviceSettingsBlade/overview/mdmDeviceId/$($Device.id)" -Icon "fas fa-laptop" -Title "Endpoint Manager"))
 
                 if ($HuduDevice) {
-                    $DRMMCard = $HuduDevice.cards | where-object {$_.integrator_name -eq 'dattormm'}
+                    $DRMMCard = $HuduDevice.cards | where-object { $_.integrator_name -eq 'dattormm' }
                     if ($DRMMCard) {
                         $DeviceLinksFormatted.add((Get-LinkBlock -URL "$($RMMDeviceURL)$($DRMMCard.data.id)" -Icon "fas fa-laptop-code" -Title "Datto RMM"))
                         $DeviceLinksFormatted.add((Get-LinkBlock -URL "$($RMMRemoteURL)$($DRMMCard.data.id)" -Icon "fas fa-desktop" -Title "Datto RMM Remote"))
@@ -864,28 +864,39 @@ try {
 			 $licensedUserHTML
 			 </div>"
       
-   	
-        $null = Set-HuduMagicDash -title "Microsoft 365 - $($customer.DisplayName)" -company_name $company_name -message "$($licensedUsers.count) Licensed Users" -icon "fab fa-microsoft" -content $body -shade "success"	
+        try {
+            $null = Set-HuduMagicDash -title "Microsoft 365 - $($customer.DisplayName)" -company_name $company_name -message "$($licensedUsers.count) Licensed Users" -icon "fab fa-microsoft" -content $body -shade "success"	
+        } catch {
+            $CompanyResult.Errors.add("Company: Failed to add Magic Dash to Company: $_")
+        }
             
         if ($CreateInOverview -eq $true) {
-            $null = Set-HuduMagicDash -title "$($customer.DisplayName)" -company_name $OverviewCompany -message "$($licensedUsers.count) Licensed Users" -icon "fab fa-microsoft" -content $body -shade "success"	
+            try {
+                $null = Set-HuduMagicDash -title "$($customer.DisplayName)" -company_name $OverviewCompany -message "$($licensedUsers.count) Licensed Users" -icon "fab fa-microsoft" -content $body -shade "success"	
+            } catch {
+                $CompanyResult.Errors.add("Company: Failed to add Magic Dash to Overview: $_")
+            }
         }
 
-        if ($importDomains) {
-            $domainstoimport = $RawDomains
-            foreach ($imp in $domainstoimport) {
-                $impdomain = $imp.id
-                $huduimpdomain = Get-HuduWebsites -name "https://$impdomain"
-                if ($($huduimpdomain.id.count) -eq 0) {
-                    if ($monitorDomains) {
-                        $null = New-HuduWebsite -name "https://$impdomain" -notes $HuduNotes -paused "false" -companyid $company_id -disabledns "false" -disablessl "false" -disablewhois "false"
-                    } else {
-                        $null = New-HuduWebsite -name "https://$impdomain" -notes $HuduNotes -paused "true" -companyid $company_id -disabledns "true" -disablessl "true" -disablewhois "true"
-                    }
+        try {
+            if ($importDomains) {
+                $domainstoimport = $RawDomains
+                foreach ($imp in $domainstoimport) {
+                    $impdomain = $imp.id
+                    $huduimpdomain = Get-HuduWebsites -name "https://$impdomain"
+                    if ($($huduimpdomain.id.count) -eq 0) {
+                        if ($monitorDomains) {
+                            $null = New-HuduWebsite -name "https://$impdomain" -notes $HuduNotes -paused "false" -companyid $company_id -disabledns "false" -disablessl "false" -disablewhois "false"
+                        } else {
+                            $null = New-HuduWebsite -name "https://$impdomain" -notes $HuduNotes -paused "true" -companyid $company_id -disabledns "true" -disablessl "true" -disablewhois "true"
+                        }
 
-                }		
-            }
+                    }		
+                }
       
+            }
+        } catch {
+            $CompanyResult.Errors.add("Company: Failed to import domain: $_")
         }
 
     } elseif ($domaincount -eq 0) {

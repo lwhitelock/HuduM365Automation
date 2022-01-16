@@ -16,102 +16,18 @@
                 "description": "The name of the Asset Layout in Hudu used to track People / Users. (Must exist already with a richtext Microsoft 365 field)"
             }
         },
-        "CreateUsers": {
-            "defaultValue": "true",
-            "type": "string",
-            "metadata": {
-                "description": "Set to true if you wish to create People / Users in Hudu from M365 if they do not exist."
-            }
-        },
         "DesktopsName": {
             "defaultValue": "Desktops / Laptops",
             "type": "string",
             "metadata": {
                 "description": "The name of the Asset Layout in Hudu used to track Desktops / Laptops. (Must exist already with a richtext Microsoft 365 field)"
             }
-        },
+        },        
         "MobilesName": {
             "defaultValue": "Mobile Devices",
             "type": "string",
             "metadata": {
                 "description": "The name of the Asset Layout in Hudu used to track Mobile Devices. (Must exist already with a richtext Microsoft 365 field)"
-            }
-        },
-        "CreateDevices": {
-            "defaultValue": "true",
-            "type": "string",
-            "metadata": {
-                "description": "Set to true if you wish to create Desktops / Laptops in Hudu from M365 if they do not exist."
-            }
-        },
-        "CreateMobileDevices": {
-            "defaultValue": "true",
-            "type": "string",
-            "metadata": {
-                "description": "Set to true if you wish to create Mobile Devices in Hudu from M365 if they do not exist."
-            }
-        },
-        "CreateInOverview": {
-            "defaultValue": "true",
-            "type": "string",
-            "metadata": {
-                "description": "Set to true to create all Magic Dashes in an overview company as well."
-            }
-        },
-        "OverviewCompany": {
-            "defaultValue": "Overview - M365",
-            "type": "string",
-            "metadata": {
-                "description": "The name of the overview company to use for Magic Dashes (Must exist already)."
-            }
-        },
-        "importDomains": {
-            "defaultValue": "true",
-            "type": "string",
-            "metadata": {
-                "description": "Set to true to import domains in M365 to Hudu Websites."
-            }
-        },
-        "monitorDomains": {
-            "defaultValue": "true",
-            "type": "string",
-            "metadata": {
-                "description": "Set to enable monitoring on imported domains."
-            }
-        },
-        "DocumentPartnerTenant": {
-            "defaultValue": "true",
-            "type": "string",
-            "metadata": {
-                "description": "Set to true to also document your partner tenant to Hudu."
-            }
-        },
-        "PartnerDefaultDomain": {
-            "defaultValue": "yourdomain.onmicrosoft.com",
-            "type": "string",
-            "metadata": {
-                "description": "Your Partner Tenant's default domain name."
-            }
-        },
-        "PartnerDisplayName": {
-            "defaultValue": "Your Company Name",
-            "type": "string",
-            "metadata": {
-                "description": "Your Partner Tenant's display name."
-            }
-        },
-        "IntuneDesktopDeviceTypes": {
-            "defaultValue": "windowsRT,macMDM",
-            "type": "string",
-            "metadata": {
-                "description": "Endpoint Manager / Intune device types to identify desktops."
-            }
-        },
-        "ExcludeSerials": {
-            "defaultValue": "0,SystemSerialNumber,To Be Filled By O.E.M.,System Serial Number,0123456789,123456789,............",
-            "type": "string",
-            "metadata": {
-                "description": "Serial numbers to ignore and attempt to match on device name instead."
             }
         },
         "customerExclude": {
@@ -174,7 +90,7 @@
             "defaultValue": "https://yourtenant.webhook.office.com/webhookb2/dxxxxxxxxxxxxx/IncomingWebhook/xxxxxxxxxx/0000-00000-0000000",
             "type": "string",
             "metadata": {
-                "description": "An incoming Teaams Webhook URL to recieve Sync Errors and Reports"
+                "description": "An incoming Teams Webhook URL to recieve Sync Errors and Reports"
             }
         },
         "PSAUserURL": {
@@ -197,8 +113,91 @@
             "metadata": {
                 "description": "The URL used to launch a remote session on a device in your RMM (Only Datto RMM support at present)"
             }
-        }
-
+        },
+        "CreateInOverview": {
+            "defaultValue": "true",
+            "type": "string",
+            "metadata": {
+                "description": "Set to true to create all Magic Dashes in an overview company as well."
+            }
+        },
+        "OverviewCompany": {
+            "defaultValue": "Overview - M365",
+            "type": "string",
+            "metadata": {
+                "description": "The name of the overview company to use for Magic Dashes (Must exist already)."
+            }
+        },
+        "DocumentPartnerTenant": {
+            "defaultValue": "true",
+            "type": "string",
+            "metadata": {
+                "description": "Set to true to also document your partner tenant to Hudu."
+            }
+        },
+        "PartnerDefaultDomain": {
+            "defaultValue": "yourdomain.onmicrosoft.com",
+            "type": "string",
+            "metadata": {
+                "description": "Your Partner Tenant's default domain name."
+            }
+        },
+        "PartnerDisplayName": {
+            "defaultValue": "Your Company Name",
+            "type": "string",
+            "metadata": {
+                "description": "Your Partner Tenant's display name."
+            }
+        },
+        "CreateUsers": {
+            "defaultValue": "true",
+            "type": "string",
+            "metadata": {
+                "description": "Set to true if you wish to create People / Users in Hudu from M365 if they do not exist."
+            }
+        },       
+        "CreateDevices": {
+            "defaultValue": "true",
+            "type": "string",
+            "metadata": {
+                "description": "Set to true if you wish to create Desktops / Laptops in Hudu from M365 if they do not exist."
+            }
+        },
+        "CreateMobileDevices": {
+            "defaultValue": "true",
+            "type": "string",
+            "metadata": {
+                "description": "Set to true if you wish to create Mobile Devices in Hudu from M365 if they do not exist."
+            }
+        },
+        "importDomains": {
+            "defaultValue": "true",
+            "type": "string",
+            "metadata": {
+                "description": "Set to true to import domains in M365 to Hudu Websites."
+            }
+        },
+        "monitorDomains": {
+            "defaultValue": "true",
+            "type": "string",
+            "metadata": {
+                "description": "Set to enable monitoring on imported domains."
+            }
+        },
+        "IntuneDesktopDeviceTypes": {
+            "defaultValue": "windowsRT,macMDM",
+            "type": "string",
+            "metadata": {
+                "description": "Endpoint Manager / Intune device types to identify desktops."
+            }
+        },
+        "ExcludeSerials": {
+            "defaultValue": "0,SystemSerialNumber,To Be Filled By O.E.M.,System Serial Number,0123456789,123456789,............",
+            "type": "string",
+            "metadata": {
+                "description": "Serial numbers to ignore and attempt to match on device name instead."
+            }
+        }     
     },
     "variables": {
         "suffix": "[substring(toLower(uniqueString(resourceGroup().id, resourceGroup().location)),0,5)]",
