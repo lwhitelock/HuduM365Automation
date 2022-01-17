@@ -66,6 +66,10 @@ $RMMDeviceURL = 'https://merlotrmm.centrastage.net/device/'
 # RMM Remote Access URL (Only Supports Datto RMM at the moment)
 $RMMRemoteURL = 'https://merlot.centrastage.net/csm/remote/rto/'
 
+# Enable CIPP integration
+$EnableCIPP = $True
+$CIPPURL = 'https://your.cippdomain.com/'
+
 ##########################      End Settings       ############################
 
 ####### License Lookup Hash #########
@@ -1079,25 +1083,32 @@ foreach ($Customer in $Customers) {
 
                 $HuduUser = $People | where-object { $_.primary_mail -eq $user.UserPrincipalName }
 
-                # Build User Link Buttons.
-                [System.Collections.Generic.List[PSCustomObject]]$UserLinksFormatted = @()
-                $UserLinksFormatted.add((Get-LinkBlock -URL "https://aad.portal.azure.com/$($Customer.defaultDomainName)/#blade/Microsoft_AAD_IAM/UserDetailsMenuBlade/Profile/userId/$($User.id)" -Icon "fas fa-users-cog" -Title "Azure AD"))
-                $UserLinksFormatted.add((Get-LinkBlock -URL "https://aad.portal.azure.com/$($Customer.defaultDomainName)/#blade/Microsoft_AAD_IAM/UserDetailsMenuBlade/SignIns/userId/$($User.id)" -Icon "fas fa-history" -Title "Sign Ins"))
-                $UserLinksFormatted.add((Get-LinkBlock -URL "https://admin.teams.microsoft.com/users/$($User.id)/account?delegatedOrg=$($Customer.defaultDomainName)" -Icon "fas fa-users" -Title "Teams Admin"))
-                $UserLinksFormatted.add((Get-LinkBlock -URL "https://endpoint.microsoft.com/$($Customer.defaultDomainName)/#blade/Microsoft_AAD_IAM/UserDetailsMenuBlade/Profile/userId/$($User.ID)" -Icon "fas fa-laptop" -Title "EPM (User)"))
-                $UserLinksFormatted.add((Get-LinkBlock -URL "https://endpoint.microsoft.com/$($Customer.defaultDomainName)/#blade/Microsoft_AAD_IAM/UserDetailsMenuBlade/Devices/userId/$($User.ID)" -Icon "fas fa-laptop" -Title "EPM (Devices)"))
-
-                # Check for Halo PSA
-                if ($HuduUser) {
-                    $HaloCard = $HuduUser.cards | where-object { $_.integrator_name -eq 'halo' }
-                    if ($HaloCard) {
-                        $UserLinksFormatted.add((Get-LinkBlock -URL "$($PSAUserUrl)$($HaloCard.sync_id)" -Icon "far fa-id-card" -Title "Halo PSA"))
+                [System.Collections.Generic.List[PSCustomObject]]$CIPPLinksFormatted = @()
+                    # Build CIPP Links
+                    if ($EnableCIPP){
+                        $CIPPLinksFormatted.add((Get-LinkBlock -URL "$($CIPPURL).auth/login/aad?post_login_redirect_uri=$($CIPPURL)identity/administration/users/view?userId=$($User.id)%26tenantDomain%3D$($Customer.defaultDomainName)" -Icon "far fa-eye" -Title "CIPP - View User"))
+                        $CIPPLinksFormatted.add((Get-LinkBlock -URL "$($CIPPURL).auth/login/aad?post_login_redirect_uri=$($CIPPURL)identity/administration/users/edit?userId=$($User.id)%26tenantDomain%3D$($Customer.defaultDomainName)" -Icon "fas fa-user-cog" -Title "CIPP - Edit User"))
+                        $CIPPLinksFormatted.add((Get-LinkBlock -URL "$($CIPPURL).auth/login/aad?post_login_redirect_uri=$($CIPPURL)identity/administration/ViewBec?userId=$($User.id)%26tenantDomain%3D$($Customer.defaultDomainName)" -Icon "fas fa-user-secret" -Title "CIPP - Research Compromise"))
                     }
-                        
-                }
-                                        
-                $UserLinksBlock = "<div>Management Links</div><div class='o365'>$($UserLinksFormatted -join '')</div>"
 
+                    # Build User Link Buttons.
+                    [System.Collections.Generic.List[PSCustomObject]]$UserLinksFormatted = @()
+                    $UserLinksFormatted.add((Get-LinkBlock -URL "https://aad.portal.azure.com/$($Customer.defaultDomainName)/#blade/Microsoft_AAD_IAM/UserDetailsMenuBlade/Profile/userId/$($User.id)" -Icon "fas fa-users-cog" -Title "Azure AD"))
+                    $UserLinksFormatted.add((Get-LinkBlock -URL "https://aad.portal.azure.com/$($Customer.defaultDomainName)/#blade/Microsoft_AAD_IAM/UserDetailsMenuBlade/SignIns/userId/$($User.id)" -Icon "fas fa-history" -Title "Sign Ins"))
+                    $UserLinksFormatted.add((Get-LinkBlock -URL "https://admin.teams.microsoft.com/users/$($User.id)/account?delegatedOrg=$($Customer.defaultDomainName)" -Icon "fas fa-users" -Title "Teams Admin"))
+                    $UserLinksFormatted.add((Get-LinkBlock -URL "https://endpoint.microsoft.com/$($Customer.defaultDomainName)/#blade/Microsoft_AAD_IAM/UserDetailsMenuBlade/Profile/userId/$($User.ID)" -Icon "fas fa-laptop" -Title "EPM (User)"))
+                    $UserLinksFormatted.add((Get-LinkBlock -URL "https://endpoint.microsoft.com/$($Customer.defaultDomainName)/#blade/Microsoft_AAD_IAM/UserDetailsMenuBlade/Devices/userId/$($User.ID)" -Icon "fas fa-laptop" -Title "EPM (Devices)"))
+
+                    # Check for Halo PSA
+                    if ($HuduUser) {
+                        $HaloCard = $HuduUser.cards | where-object {$_.integrator_name -eq 'halo'}
+                        if ($HaloCard) {
+                            $UserLinksFormatted.add((Get-LinkBlock -URL "$($PSAUserUrl)$($HaloCard.sync_id)" -Icon "far fa-id-card" -Title "Halo PSA"))
+                        }
+                        
+                    }
+                                        
+                    $UserLinksBlock = "<div>Management Links</div><div class='o365'>$($UserLinksFormatted -join '')$($CIPPLinksFormatted -join '')</div>"
 
                 # Assemble the full body of the user details
                 $UserBody = "<div>$AssignedPlansBlock<br />$UserLinksBlock<br /><div class=`"nasa__content`">$($UserOverviewBlock)$($UserMailDetailsBlock)$($OneDriveBlock)$($UserMailSettingsBlock)$($UserPoliciesBlock)</div><div class=`"nasa__content`">$($UserDevicesDetailsBlock)</div><div class=`"nasa__content`">$($UserGroupsBlock)</div></div>"
@@ -1350,7 +1361,6 @@ foreach ($Customer in $Customers) {
       
         }
 
-        Write-Host "Time Taken: $((New-TimeSpan -Start $StartTime -End (Get-Date)).TotalMinutes)"
     } else {
         write-verbose "$(Get-Date) - https://$defaultdomain Not found in Hudu please add it to the correct client"
     }

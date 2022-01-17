@@ -149,6 +149,20 @@
                 "description": "Your Partner Tenant's display name."
             }
         },
+        "EnableCIPP": {
+            "defaultValue": "true",
+            "type": "string",
+            "metadata": {
+                "description": "Enable the integration to CIPP."
+            }
+        },
+        "CIPPURL": {
+            "defaultValue": "https://your.cippdomain.com/",
+            "type": "string",
+            "metadata": {
+                "description": "Your CIPP domain."
+            }
+        },
         "CreateUsers": {
             "defaultValue": "true",
             "type": "string",
@@ -477,6 +491,14 @@
                         {
                             "name": "RMMRemoteURL",
                             "value": "[parameters('RMMRemoteURL')]"
+                        },
+                        {
+                            "name": "EnableCIPP",
+                            "value": "[parameters('EnableCIPP')]"
+                        },
+                        {
+                            "name": "CIPPURL",
+                            "value": "[parameters('CIPPURL')]"
                         }
                     ]
                 }

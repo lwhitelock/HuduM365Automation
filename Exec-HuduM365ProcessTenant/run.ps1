@@ -31,6 +31,8 @@ $AssignedNameMap = Get-AssignedNameMap
 $PSAUserURL = $env:PSAUserURL
 $RMMDeviceURL = $env:RMMDeviceURL
 $RMMRemoteURL = $env:RMMRemoteURL
+$EnableCIPP = [bool]$env:EnableCIPP
+$CIPPURL = $env:CIPPURL
 
 try {
     $hududomain = Get-HuduWebsites -name "https://$defaultdomain" -ea stop
@@ -650,6 +652,13 @@ try {
 
                     $HuduUser = $People | where-object { $_.primary_mail -eq $user.UserPrincipalName }
 
+                    [System.Collections.Generic.List[PSCustomObject]]$CIPPLinksFormatted = @()
+                    if ($EnableCIPP) {
+                        $CIPPLinksFormatted.add((Get-LinkBlock -URL "$($CIPPURL).auth/login/aad?post_login_redirect_uri=$($CIPPURL)identity/administration/users/view?userId=$($User.id)%26tenantDomain%3D$($Customer.defaultDomainName)" -Icon "far fa-eye" -Title "CIPP - View User"))
+                        $CIPPLinksFormatted.add((Get-LinkBlock -URL "$($CIPPURL).auth/login/aad?post_login_redirect_uri=$($CIPPURL)identity/administration/users/edit?userId=$($User.id)%26tenantDomain%3D$($Customer.defaultDomainName)" -Icon "fas fa-user-cog" -Title "CIPP - Edit User"))
+                        $CIPPLinksFormatted.add((Get-LinkBlock -URL "$($CIPPURL).auth/login/aad?post_login_redirect_uri=$($CIPPURL)identity/administration/ViewBec?userId=$($User.id)%26tenantDomain%3D$($Customer.defaultDomainName)" -Icon "fas fa-user-secret" -Title "CIPP - Research Compromise"))
+                    }
+
                     [System.Collections.Generic.List[PSCustomObject]]$UserLinksFormatted = @()
                     $UserLinksFormatted.add((Get-LinkBlock -URL "https://aad.portal.azure.com/$($Customer.defaultDomainName)/#blade/Microsoft_AAD_IAM/UserDetailsMenuBlade/Profile/userId/$($User.id)" -Icon "fas fa-users-cog" -Title "Azure AD"))
                     $UserLinksFormatted.add((Get-LinkBlock -URL "https://aad.portal.azure.com/$($Customer.defaultDomainName)/#blade/Microsoft_AAD_IAM/UserDetailsMenuBlade/SignIns/userId/$($User.id)" -Icon "fas fa-history" -Title "Sign Ins"))
@@ -664,9 +673,8 @@ try {
                         }
                         
                     }
-
-                    $UserLinksBlock = "<div>Management Links</div><div class='o365'>$($UserLinksFormatted -join '')</div>"
-
+                                        
+                    $UserLinksBlock = "<div>Management Links</div><div class='o365'>$($UserLinksFormatted -join '')$($CIPPLinksFormatted -join '')</div>"
 
                     $UserBody = "<div>$AssignedPlansBlock<br />$UserLinksBlock<br /><div class=`"nasa__content`">$($UserOverviewBlock)$($UserMailDetailsBlock)$($OneDriveBlock)$($UserMailSettingsBlock)$($UserPoliciesBlock)</div><div class=`"nasa__content`">$($UserDevicesDetailsBlock)</div><div class=`"nasa__content`">$($UserGroupsBlock)</div></div>"
 
