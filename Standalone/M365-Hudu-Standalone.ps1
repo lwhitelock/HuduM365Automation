@@ -1,4 +1,7 @@
 # M365 to Hudu Syncronisation Script
+# Author: Luke Whitelock
+# Date: 16/01/2022
+# Blog: https://mspp.io/hudu-microsoft-365-integration-and-updated-magic-dash-v3/
 # For configuration details and an Azure Function version of the script please visit here: https://github.com/lwhitelock/HuduM365Automation
 # This project utilizes some of the helper functions written by Kelvin Tegelaar from the CIPP project https://github.com/KelvinTegelaar/CIPP and is licensed under the same terms.
 
