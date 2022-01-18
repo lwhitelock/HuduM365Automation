@@ -108,10 +108,10 @@ for ($i = 0; $i -lt $ErrorOutputs.count; $i += 20) {
     $CustomersWithErrors = $ErrorOutputs[$i..($i + 19)] | Where-Object { $_.errors } | Select-Object name, @{n = 'Errors'; e = { $_.errors -join ', ' } }
 
     foreach ($Customer in $CustomersWithErrors) {
-        $ErrorParsed = $Customer.Errors | foreach-object { "- $_ `n" }
+        $ErrorParsed = $Customer.Errors | foreach-object { "- $_`n" }
         $Message = [pscustomobject]@{
             type      = 'TextBlock'
-            text      = "**$($Customer.name)**``n$ErrorParsed"
+            text      = "**$($Customer.name)**`n$ErrorParsed"
             wrap      = $true
             seperator = $true
         }
