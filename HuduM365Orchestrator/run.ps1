@@ -107,10 +107,10 @@ for ($i = 0; $i -lt $ErrorOutputs.count; $i += 20) {
     $CustomersWithErrors = $ErrorOutputs[$i..($i + 19)] | Where-Object { $_.errors } | Select-Object name, @{n = 'Errors'; e = { $_.errors -join ', ' } }
 
     foreach ($Customer in $CustomersWithErrors){
-        $ErrorParsed = $Customer.Errors | foreach-object { "- $_ \r"}
+        $ErrorParsed = $Customer.Errors | foreach-object { "- $_ \\r"}
         $Message = [pscustomobject]@{
             type  = 'TextBlock'
-            text  = "**$($Customer.name)**\r$ErrorParsed"
+            text  = "**$($Customer.name)**\\r$ErrorParsed"
             wrap  = $true
         }
         $AdaptiveBody.add($Message)
