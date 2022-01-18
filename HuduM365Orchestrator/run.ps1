@@ -2,7 +2,7 @@ param($Context)
 
 $Customers = Invoke-DurableActivity -FunctionName 'Get-M365Tenants'
 
-$ProcessingCompanies = foreach ($Customer in $Customers){
+$ProcessingCompanies = foreach ($Customer in $Customers) {
     Invoke-DurableActivity -FunctionName 'Exec-HuduM365ProcessTenant' -Input $Customer -NoWait
 }
 
@@ -106,12 +106,13 @@ for ($i = 0; $i -lt $ErrorOutputs.count; $i += 20) {
 
     $CustomersWithErrors = $ErrorOutputs[$i..($i + 19)] | Where-Object { $_.errors } | Select-Object name, @{n = 'Errors'; e = { $_.errors -join ', ' } }
 
-    foreach ($Customer in $CustomersWithErrors){
-        $ErrorParsed = $Customer.Errors | foreach-object { "- $_ \\r"}
+    foreach ($Customer in $CustomersWithErrors) {
+        $ErrorParsed = $Customer.Errors | foreach-object { "- $_ \\r" }
         $Message = [pscustomobject]@{
-            type  = 'TextBlock'
-            text  = "**$($Customer.name)**\\r$ErrorParsed"
-            wrap  = $true
+            type      = 'TextBlock'
+            text      = "**$($Customer.name)**\\r$ErrorParsed"
+            wrap      = $true
+            seperator = $true
         }
         $AdaptiveBody.add($Message)
     }
