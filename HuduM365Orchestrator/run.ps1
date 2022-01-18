@@ -105,7 +105,7 @@ for ($i = 0; $i -lt $ErrorOutputs.count; $i += 20) {
         })
 
 
-    $CustomersWithErrors = $ErrorOutputs[$i..($i + 19)] | Where-Object { $_.errors } | Select-Object name, @{n = 'Errors'; e = { $_.errors -join ', ' } }
+    $CustomersWithErrors = $ErrorOutputs[$i..($i + 19)] | Where-Object { $_.errors } | Select-Object name, errors
 
     foreach ($Customer in $CustomersWithErrors) {
         $ErrorParsed = $Customer.Errors | foreach-object { "- $_`n" }
