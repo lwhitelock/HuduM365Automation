@@ -393,7 +393,6 @@ try {
                 $CASFull = $null
             }
         } else {
-            $CompanyResult.Errors.add("Company: Unable to fetch CAS Mailbox Details $_")
             $CASFull = $null
         }
        
