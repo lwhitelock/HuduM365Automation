@@ -389,26 +389,35 @@ try {
             try {
                 $CASFull = New-GraphGetRequest -Headers $ExchangeAuthHeaders -uri "https://outlook.office365.com/adminapi/beta/$($tenantfilter)/CasMailbox" -Tenantid $tenantfilter -scope ExchangeOnline -noPagination $true
             } catch {
-                $CompanyResult.Errors.add("Company: Unable to fetch CAS Mailbox Details $_")
                 $CASFull = $null
+                $CompanyResult.Errors.add("Company: Unable to fetch CAS Mailbox Details $_")
             }
         } else {
             $CASFull = $null
         }
-       
-        try {
-            $MailboxDetailedFull = New-ExoRequest -TenantID $TenantFilter -cmdlet 'Get-Mailbox'
-        } catch {
-            $CompanyResult.Errors.add("Company: Unable to fetch Mailbox Details $_")
+        
+        if ($ExchangeAuthenticated) {
+            try {
+                $MailboxDetailedFull = New-ExoRequest -TenantID $TenantFilter -cmdlet 'Get-Mailbox'
+            } catch {
+                $CompanyResult.Errors.add("Company: Unable to fetch Mailbox Details $_")
+                $MailboxDetailedFull = $null
+            }
+        } else {
             $MailboxDetailedFull = $null
         }
 
-        try {
-            $MailboxStatsFull = New-GraphGetRequest -Headers $AuthHeaders -uri "https://graph.microsoft.com/v1.0/reports/getMailboxUsageDetail(period='D7')" -tenantid $TenantFilter | convertfrom-csv 
-        } catch {
-            $CompanyResult.Errors.add("Company: Unable to fetch Mailbox Statistic Details $_")
+        if ($ExchangeAuthenticated) {
+            try {
+                $MailboxStatsFull = New-GraphGetRequest -Headers $AuthHeaders -uri "https://graph.microsoft.com/v1.0/reports/getMailboxUsageDetail(period='D7')" -tenantid $TenantFilter | convertfrom-csv 
+            } catch {
+                $CompanyResult.Errors.add("Company: Unable to fetch Mailbox Statistic Details $_")
+                $MailboxStatsFull = $null
+            }
+        } else {
             $MailboxStatsFull = $null
         }
+
 
         if ($licensedUsers) {
             $pre = "<div class=`"nasa__block`"><header class='nasa__block-header'>
@@ -450,7 +459,7 @@ try {
                     $CASRequest = $CASFull | where-object { $_.ExternalDirectoryObjectId -eq $User.iD }
                     $MailboxDetailedRequest = $MailboxDetailedFull | where-object { $_.ExternalDirectoryObjectId -eq $User.iD }
                     $StatsRequest = $MailboxStatsFull | where-object { $_.'User Principal Name' -eq $User.UserPrincipalName }
-                    
+
                     if ($ExchangeAuthenticated) {
                         try {
                             $PermsRequest = New-GraphGetRequest -Headers $ExchangeAuthHeaders -uri "https://outlook.office365.com/adminapi/beta/$($tenantfilter)/Mailbox('$($User.ID)')/MailboxPermission" -Tenantid $tenantfilter -scope ExchangeOnline -noPagination $true
@@ -460,7 +469,6 @@ try {
                     } else {
                         $PermsRequest = $null
                     }
-
 
                     $ParsedPerms = foreach ($Perm in $PermsRequest) {
                         if ($Perm.User -ne 'NT AUTHORITY\SELF') {
