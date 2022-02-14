@@ -14,15 +14,15 @@ $CompanyResult = [PSCustomObject]@{
 }
 
 $PeopleLayoutName = $env:PeopleLayoutName
-$CreateUsers = [bool]$env:CreateUsers
+$CreateUsers = [System.Convert]::ToBoolean($env:CreateUsers)
 $DesktopsName = $env:DesktopsName
 $MobilesName = $env:MobilesName
-$CreateDevices = [bool]$env:CreateDevices
-$CreateMobileDevices = [bool]$env:CreateMobileDevices
-$CreateInOverview = [bool] $env:CreateInOverview
+$CreateDevices = [System.Convert]::ToBoolean($env:CreateDevices)
+$CreateMobileDevices = [System.Convert]::ToBoolean($env:CreateMobileDevices)
+$CreateInOverview = [System.Convert]::ToBoolean($env:CreateInOverview)
 $OverviewCompany = $env:OverviewCompany
-$importDomains = [bool]$env:importDomains
-$monitorDomains = [bool]$env:monitorDomains
+$importDomains = [System.Convert]::ToBoolean($env:importDomains)
+$monitorDomains = [System.Convert]::ToBoolean($env:monitorDomains)
 $IntuneDesktopDeviceTypes = $env:IntuneDesktopDeviceTypes -split ','
 $ExcludeSerials = $env:ExcludeSerials -split ','
 $LicenseLookup = Get-LicenseLookup
@@ -31,7 +31,7 @@ $AssignedNameMap = Get-AssignedNameMap
 $PSAUserURL = $env:PSAUserURL
 $RMMDeviceURL = $env:RMMDeviceURL
 $RMMRemoteURL = $env:RMMRemoteURL
-$EnableCIPP = [bool]$env:EnableCIPP
+$EnableCIPP = [System.Convert]::ToBoolean($env:EnableCIPP)
 $CIPPURL = $env:CIPPURL
 
 try {
