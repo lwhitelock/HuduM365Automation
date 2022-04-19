@@ -2,8 +2,18 @@ param($Context)
 
 $Customers = Invoke-DurableActivity -FunctionName 'Get-M365Tenants'
 
-$ProcessingCompanies = foreach ($Customer in $Customers) {
-    Invoke-DurableActivity -FunctionName 'Exec-HuduM365ProcessTenant' -Input $Customer -NoWait
+if ($Customers.Error) {
+    $Outputs = [PSCustomObject]@{
+        Name    = 'Error Occured Fetching Tenants'
+        Users   = 0
+        Devices = 0
+        Errors  = [System.Collections.Generic.List[string]]@("$($Customers.Error)")
+    }
+
+} else {
+    $ProcessingCompanies = foreach ($Customer in $Customers) {
+        Invoke-DurableActivity -FunctionName 'Exec-HuduM365ProcessTenant' -Input $Customer -NoWait
+    }
 }
 
 $Outputs = Wait-ActivityFunction -Task $ProcessingCompanies
@@ -61,7 +71,7 @@ $TeamsMessageBody = [PSCustomObject]@{
             contentType = 'application/vnd.microsoft.card.adaptive'
             contentURL  = $null
             content     = $AdaptiveCard
-            width = 'stretch'
+            width       = 'stretch'
         })
 
 }

@@ -6,4 +6,6 @@
     # To use the Az module in your function app, please uncomment the line below.
     # 'Az' = '7.*'
     'HuduAPI' = '2.1.0'
+    'Az.accounts'  = '2.*'
+    'Az.Keyvault'  = '3.*'
 }
