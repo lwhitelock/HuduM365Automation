@@ -41,6 +41,55 @@ For this script you will need
 ### Installation
 If you wish to customise the code you can fork this repository and then deploy to Azure. If you would like to use the default version which will run the syncronisation daily at midnight, you can deploy it with this button:
 
+#### Custom CSS
+Go to Admin -> Design -> Custom CSS and Add in:
+```
+.card__item table{
+	border-collapse: collapse;
+	margin: 5px 0;
+	font-size: 0.8em;
+	font-family: sans-serif;
+	min-width: 400px;
+	box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+.card__item h2, p{
+	font-size: 0.8em;
+	font-family: sans-serif;
+}
+.card__item th, td {
+	padding: 5px 5px;
+	width:auto;
+}
+.card__item thead tr {
+	text-align: left;
+}
+.card__item tr {
+	border-bottom: 1px solid #dddddd;
+}
+
+.custom-fast-fact.custom-fast-fact--warning {
+    background: #f5c086;
+}
+ .custom-fast-fact.custom-fast-fact--datto-low {
+     background: #2C81C8;
+}
+ .custom-fast-fact.custom-fast-fact--datto-moderate {
+     background: #F7C210;
+}
+
+ .custom-fast-fact.custom-fast-fact--datto-high {
+     background: #F68218;
+}
+
+ .custom-fast-fact.custom-fast-fact--datto-critical {
+     background: #EC422E;
+}
+
+.nasa__block {
+   height:auto;
+}
+```
+
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flwhitelock%2FHuduM365Automation%2Fmaster%2FDeployment%2FAzureDeployment.json)
 
 ### Settings
