@@ -6,6 +6,10 @@ This project utilizes some of the helper functions and approaches written by Kel
 
 
 ### Updates
+#### Version 1.2
+```
+Simplified and Fixed Refresh Token Update
+```
 #### Version 1.1
 ```
 Added error handling for tokens
