@@ -4,6 +4,8 @@ bin
 obj
 appsettings.json
 local.settings.json
+scratch.ps1
+Test-ProcessTenant/*
 
 # Azurite artifacts
 __blobstorage__
