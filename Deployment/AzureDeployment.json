@@ -241,7 +241,7 @@
                         "permissions": {
                             "keys": [],
                             "secrets": [
-                                "get"
+                                "get","set"
                             ],
                             "certificates": []
                         }
