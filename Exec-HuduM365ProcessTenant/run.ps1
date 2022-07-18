@@ -35,14 +35,14 @@ $EnableCIPP = [System.Convert]::ToBoolean($env:EnableCIPP)
 $CIPPURL = $env:CIPPURL
 
 try {
-    $hududomain = Get-HuduWebsites -name "https://$defaultdomain" -ea stop
-    $domaincount = ($hududomain.id | measure-object).count
+    $huduAPIAsset = Get-HuduAssets -Name $Customer.customerId -ea stop
 
-    if ($domaincount -eq 1) {
+    if ($null -ne $huduAPIAsset){
         $TenantFilter = $Customer.CustomerId
 
-        $company_name = $hududomain[0].company_name
-        $company_id = $hududomain[0].company_id
+        $company_name = $huduAPIAsset.company_name
+        $company_id = $huduAPIAsset.company_id
+
         $ExchangeAuthenticated = $true
 
         try {
@@ -930,11 +930,11 @@ try {
         } catch {
             $CompanyResult.Errors.add("Company: Failed to import domain: $_")
         }
-
-    } elseif ($domaincount -eq 0) {
-        $CompanyResult.Errors.add("Company: Domain not found in Hudu please add $defaultdomain to a company")
+        
+    } elseif ($null -eq $huduAPIAsset) {
+        $CompanyResult.Errors.add("Company: API Asset not found in Hudu please add $($Customer.customerId) to a company")
     } else {
-        $CompanyResult.Errors.add("Company: Multiple companies matched in Hudu for $defaultdomain")
+        $CompanyResult.Errors.add("Company: Multiple companies matched in Hudu for $($Customer.customerId)")
     }
 } catch {
     $CompanyResult.Errors.add("Company: A fatal error occured: $_")
