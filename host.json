@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "managedDependency": {
-    "Enabled": true
+    "Enabled": false
   },
   "functionTimeout": "00:10:00",
   "extensionBundle": {

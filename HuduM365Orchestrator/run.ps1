@@ -1,19 +1,26 @@
 param($Context)
 
-$Customers = Invoke-DurableActivity -FunctionName 'Get-M365Tenants'
+$DurableRetryOptions = @{
+    FirstRetryInterval  = (New-TimeSpan -Seconds 5)
+    MaxNumberOfAttempts = 3
+    BackoffCoefficient  = 2
+}
+$RetryOptions = New-DurableRetryOptions @DurableRetryOptions
+
+$Customers = Invoke-ActivityFunction -FunctionName 'Get-M365Tenants' 
 
 $ProcessingCompanies = foreach ($Customer in $Customers) {
-    Invoke-DurableActivity -FunctionName 'Exec-HuduM365ProcessTenant' -Input $Customer -NoWait
+    Invoke-DurableActivity -FunctionName 'Exec-HuduM365ProcessTenant' -Input $Customer -NoWait -RetryOptions $RetryOptions
 }
 
 $Outputs = Wait-ActivityFunction -Task $ProcessingCompanies
 
-Write-Host "Complete: $($Outputs | Convertto-json | out-string)"
+Write-Host "Complete: $($Outputs | ConvertTo-Json | Out-String)"
 
 $WebhookURL = $env:WebhookURL
 
-$ErrorOutputs = $Outputs | where-object { $_.Errors }
-$ErrorOutputs | ForEach-Object { $_ | Add-Member -MemberType NoteProperty -Name 'ErrorCount' -Value "$(($_.errors | measure-object).count)" }
+$ErrorOutputs = $Outputs | Where-Object { $_.Errors }
+$ErrorOutputs | ForEach-Object { $_ | Add-Member -MemberType NoteProperty -Name 'ErrorCount' -Value "$(($_.errors | Measure-Object).count)" }
 
 $AdaptiveCard = [pscustomobject]@{
     '$schema' = 'http://adaptivecards.io/schemas/adaptive-card.json'
@@ -30,23 +37,23 @@ $AdaptiveCard = [pscustomobject]@{
             facts = @(
                 @{
                     title = 'Total Customers'
-                    value = ($Outputs | measure-object).count
+                    value = ($Outputs | Measure-Object).count
                 },
                 @{
                     title = 'Total Users'
-                    value = ($Outputs.users | measure-object -sum).sum
+                    value = ($Outputs.users | Measure-Object -Sum).sum
                 },
                 @{
                     title = 'Total Devices'
-                    value = ($Outputs.devices | measure-object -sum).sum
+                    value = ($Outputs.devices | Measure-Object -Sum).sum
                 },
                 @{
                     title = 'Total Errors'
-                    value = ($ErrorOutputs.ErrorCount | measure-object -sum).sum
+                    value = ($ErrorOutputs.ErrorCount | Measure-Object -Sum).sum
                 },
                 @{
                     title = 'Customers with Errors'
-                    value = ($ErrorOutputs | measure-object).count
+                    value = ($ErrorOutputs | Measure-Object).count
                 }
             )
         }
@@ -61,17 +68,17 @@ $TeamsMessageBody = [PSCustomObject]@{
             contentType = 'application/vnd.microsoft.card.adaptive'
             contentURL  = $null
             content     = $AdaptiveCard
-            width = 'stretch'
+            width       = 'stretch'
         })
 
 }
 
 
 $parameters = @{
-    "URI"         = $WebhookURL
-    "Method"      = 'POST'
-    "Body"        = $TeamsMessageBody | convertto-json -depth 100
-    "ContentType" = 'application/json'
+    'URI'         = $WebhookURL
+    'Method'      = 'POST'
+    'Body'        = $TeamsMessageBody | ConvertTo-Json -Depth 100
+    'ContentType' = 'application/json'
 }
 
 Invoke-RestMethod @parameters
@@ -108,7 +115,7 @@ for ($i = 0; $i -lt $ErrorOutputs.count; $i += 20) {
     $CustomersWithErrors = $ErrorOutputs[$i..($i + 19)] | Where-Object { $_.errors } | Select-Object name, errors
 
     foreach ($Customer in $CustomersWithErrors) {
-        $ErrorParsed = $Customer.Errors | foreach-object { "- $_`n" }
+        $ErrorParsed = $Customer.Errors | ForEach-Object { "- $_`n" }
         $Message = [pscustomobject]@{
             type      = 'TextBlock'
             text      = "**$($Customer.name)**`n$ErrorParsed"
@@ -137,10 +144,10 @@ for ($i = 0; $i -lt $ErrorOutputs.count; $i += 20) {
     }
 
     $parameters = @{
-        "URI"         = $WebhookURL
-        "Method"      = 'POST'
-        "Body"        = $TeamsMessageBody | convertto-json -depth 100
-        "ContentType" = 'application/json'
+        'URI'         = $WebhookURL
+        'Method'      = 'POST'
+        'Body'        = $TeamsMessageBody | ConvertTo-Json -Depth 100
+        'ContentType' = 'application/json'
     }
 
     Invoke-RestMethod @parameters

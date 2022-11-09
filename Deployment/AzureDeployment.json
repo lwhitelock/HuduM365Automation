@@ -377,6 +377,10 @@
                             "value": "[variables('funcAppName')]"
                         },
                         {
+                            "name": "WEBSITE_RUN_FROM_PACKAGE",
+                            "value": "1"
+                        },
+                        {
                             "name": "FUNCTIONS_EXTENSION_VERSION",
                             "value": "~3"
                         },
@@ -515,7 +519,7 @@
                         "RepoUrl": "[variables('repoURL')]",
                         "branch": "master",
                         "publishRunbook": true,
-                        "IsManualIntegration": true
+                        "isGitHubAction": true
                     }
                 }
             ]
