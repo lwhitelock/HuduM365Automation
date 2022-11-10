@@ -9,6 +9,13 @@
                 "description": "Name use as base-template to named the resources deployed in Azure."
             }
         },
+        "repoUrl": {
+            "defaultValue": "https://github.com/lwhitelock/HuduM365Automation.git",
+            "type": "string",
+            "metadata": {
+                "description": "Repository URL to use"
+            }
+        },
         "PeopleLayoutName": {
             "defaultValue": "People",
             "type": "string",
@@ -218,7 +225,7 @@
         "funcAppName": "[toLower(concat(parameters('baseName'), variables('suffix')))]",
         "funcStorageName": "[tolower(concat(substring(parameters('baseName'), 0, min(length(parameters('baseName')),16)), 'stg', variables('suffix')))]",
         "serverFarmName": "[concat(substring(parameters('baseName'), 0, min(length(parameters('baseName')),14)), '-srv-', variables('suffix'))]",
-        "repoURL": "https://github.com/lwhitelock/HuduM365Automation.git",
+        "repoURL": "[parameters('repoUrl')]",
         "uniqueResourceNameBase": "[toLower(concat(parameters('baseName'), variables('suffix')))]",
         "swaName": "[toLower(concat(parameters('baseName'), '-swa-', variables('suffix')))]"
     },
