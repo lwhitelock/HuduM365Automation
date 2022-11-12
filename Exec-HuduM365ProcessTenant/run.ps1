@@ -339,9 +339,9 @@ try {
             }
         }
 
-        $AllConditionalAccessPolcies = Get-BulkResultByID -Results $TenantResults -ID 'ConditionalAccess'
+        $AllConditionalAccessPolicies = Get-BulkResultByID -Results $TenantResults -ID 'ConditionalAccess'
 
-        $ConditionalAccessMembers = foreach ($CAPolicy in $AllConditionalAccessPolcies) {
+        $ConditionalAccessMembers = foreach ($CAPolicy in $AllConditionalAccessPolicies) {
             [System.Collections.Generic.List[PSCustomObject]]$CAMembers = @()
 
             if ($CAPolicy.conditions.users.includeUsers -contains 'All') {
@@ -677,7 +677,7 @@ try {
                     }
 
                     if ($UserPoliciesFormatted) {
-                        $UserPoliciesBlock = Get-FormattedBlock -Heading 'Assigned Conditional Access Polcies' -Body $UserPoliciesFormatted
+                        $UserPoliciesBlock = Get-FormattedBlock -Heading 'Assigned Conditional Access Policies' -Body $UserPoliciesFormatted
                     }
                     else {
                         $UserPoliciesBlock = $null
@@ -808,7 +808,7 @@ try {
                 $DeviceEnrollmentFormatted.add($(Get-FormatedField -Title 'Virtualistation Based Security' -Value "$($Device.hardwareinformation.deviceGuardVirtualizationBasedSecurityState)"))
                 $DeviceEnrollmentFormatted.add($(Get-FormatedField -Title 'Credential Guard' -Value "$($Device.hardwareinformation.deviceGuardLocalSystemAuthorityCredentialGuardState)"))
 
-                $DevicePolciesTable = foreach ($Policy in $DeviceComplianceDetails) {
+                $DevicePoliciesTable = foreach ($Policy in $DeviceComplianceDetails) {
                     if ($device.deviceName -in $Policy.DeviceStatuses.deviceDisplayName) {
                         $Status = $Policy.DeviceStatuses | Where-Object { $_.deviceDisplayName -eq $device.deviceName }
                         if ($Status.status -ne 'unknown') {
@@ -821,7 +821,7 @@ try {
                         }
                     }
                 }
-                $DevicePolciesFormatted = $DevicePolciesTable | ConvertTo-Html -Fragment | Out-String
+                $DevicePoliciesFormatted = $DevicePoliciesTable | ConvertTo-Html -Fragment | Out-String
 
                 $DeviceGroupsTable = foreach ($Group in $Groups) {
                     if ($device.azureADDeviceId -in $Group.members.deviceId) {
@@ -846,7 +846,7 @@ try {
                 $DeviceOverviewBlock = Get-FormattedBlock -Heading 'Device Details' -Body ($DeviceOverviewFormatted -join '')
                 $DeviceHardwareBlock = Get-FormattedBlock -Heading 'Hardware Details' -Body ($DeviceHardwareFormatted -join '')
                 $DeviceEnrollmentBlock = Get-FormattedBlock -Heading 'Device Enrollment Details' -Body ($DeviceEnrollmentFormatted -join '')
-                $DevicePolicyBlock = Get-FormattedBlock -Heading 'Compliance Polcies' -Body ($DevicePolciesFormatted -join '')
+                $DevicePolicyBlock = Get-FormattedBlock -Heading 'Compliance Policies' -Body ($DevicePoliciesFormatted -join '')
                 $DeviceAppsBlock = Get-FormattedBlock -Heading 'App Details' -Body ($DeviceAppsFormatted -join '')
                 $DeviceGroupsBlock = Get-FormattedBlock -Heading 'Device Groups' -Body ($DeviceGroupsFormatted -join '')
 
