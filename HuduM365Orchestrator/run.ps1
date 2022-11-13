@@ -1,8 +1,8 @@
 param($Context)
 
 $DurableRetryOptions = @{
-    FirstRetryInterval  = (New-TimeSpan -Seconds 5)
-    MaxNumberOfAttempts = 3
+    FirstRetryInterval  = (New-TimeSpan -Minutes 5)
+    MaxNumberOfAttempts = 2
     BackoffCoefficient  = 2
 }
 $RetryOptions = New-DurableRetryOptions @DurableRetryOptions

@@ -69,6 +69,8 @@ try {
         $MobilesLayout = Get-HuduAssetLayouts -Name $env:MobilesName
         $HuduMobileDevices = Get-HuduAssets -CompanyId $company_id -AssetLayoutId $MobilesLayout.id
 
+        $HuduRelations = Get-HuduRelations
+
         try {
             $HuduDevices = $HuduDesktopDevices + $HuduMobileDevices
         }
@@ -885,10 +887,10 @@ try {
                     if (($HuduDevice | Measure-Object).count -eq 1) {                                  
                         $null = Set-HuduAsset -asset_id $HuduDevice.id -Name $HuduDevice.name -company_id $company_id -asset_layout_id $HuduDevice.asset_layout_id -Fields $DeviceAssetFields -PrimarySerial $Device.serialNumber
 
-                        $HuduUser = $People | Where-Object { $_.primary_mail -eq $Device.userPrincipalName -or ($_.cards.integrator_name -eq 'cw_manage' -and $_.cards.data.communicationItems.communicationType -eq 'Email' -and $_.cards.data.communicationItems.value -eq $Device.UserPrincipalName) }
+                        $HuduUser = $People | Where-Object { $_.primary_mail -eq $Device.userPrincipalName -or ($_.cards.integrator_name -eq 'cw_manage' -and $_.cards.data.communicationItems.communicationType -eq 'Email' -and $_.cards.data.communicationItems.value -eq $Device.userPrincipalName) }
                         
                         if ($HuduUser) {
-                            $Relation = Get-HuduRelations -FromableType 'Asset' -FromableID $HuduUser.id -ToableType 'Asset' -ToableID $HuduDevice.id -ea silentlycontinue
+                            $Relation = $HuduRelations | Where-Object { $_.fromable_type -eq 'Asset' -and $_.fromable_id -eq $HuduUser.id -and $_.toable_type -eq 'Asset' -and $_toable_id -eq $HuduDevice.id }
                             if (-not $Relation) {
                                 try {
                                     $null = New-HuduRelation -FromableType 'Asset' -FromableID $HuduUser.id -ToableType 'Asset' -ToableID $HuduDevice.id -ea stop
@@ -912,7 +914,7 @@ try {
                     }
                     if ($DeviceCreation -eq $true) {
                         $HuduDevice = (New-HuduAsset -Name $device.deviceName -company_id $company_id -asset_layout_id $DeviceLayoutID -Fields $DeviceAssetFields -PrimarySerial $Device.serialNumber).asset
-                        $HuduUser = $People | Where-Object { $_.primary_mail -eq $Device.userPrincipalName -or ($_.cards.integrator_name -eq 'cw_manage' -and $_.cards.data.communicationItems.communicationType -eq 'Email' -and $_.cards.data.communicationItems.value -eq $Device.UserPrincipalName) }
+                        $HuduUser = $People | Where-Object { $_.primary_mail -eq $Device.userPrincipalName -or ($_.cards.integrator_name -eq 'cw_manage' -and $_.cards.data.communicationItems.communicationType -eq 'Email' -and $_.cards.data.communicationItems.value -eq $Device.userPrincipalName) }
                         if ($HuduUser) {
                             try {
                                 $null = New-HuduRelation -FromableType 'Asset' -FromableID $HuduUser.id -ToableType 'Asset' -ToableID $HuduDevice.id -ea stop
