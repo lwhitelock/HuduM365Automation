@@ -89,8 +89,6 @@ function New-ExoRequest ($tenantid, $cmdlet, $cmdParams) {
 
 function New-GraphBulkRequest ($Requests, $tenantid, $Headers) {
     $URL = 'https://graph.microsoft.com/beta/$batch'
-    $headers['ConsistencyLevel'] = 'eventual'
-
     $ReturnedData = for ($i = 0; $i -lt $Requests.count; $i += 20) {                                                                                                                                              
         $req = @{}                
         # Use select to create hashtables of id, method and url for each call                                     
@@ -99,6 +97,7 @@ function New-GraphBulkRequest ($Requests, $tenantid, $Headers) {
     }
     
     foreach ($MoreData in $ReturnedData.Responses | Where-Object { $_.body.'@odata.nextLink' }) {
+        $headers['ConsistencyLevel'] = 'eventual'
         $AdditionalValues = New-GraphGetRequest -Headers $Headers -uri $MoreData.body.'@odata.nextLink' -tenantid $TenantFilter
         $NewValues = [System.Collections.Generic.List[PSCustomObject]]$MoreData.body.value
         $AdditionalValues | ForEach-Object { $NewValues.add($_) }

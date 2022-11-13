@@ -104,7 +104,7 @@ try {
                 method  = 'GET'
                 url     = '/users$filter=assignedLicenses/$count ne 0&$count=true'
                 headers = @{
-                    ConsistencyLevel = 'eventual'
+                    'ConsistencyLevel' = 'eventual'
                 }
             },
             @{
@@ -154,6 +154,7 @@ try {
             $TenantResults = New-GraphBulkRequest -Headers $AuthHeaders -Requests $TenantRequests -tenantid $TenantFilter
         }
         catch {
+            Write-Host $_.Exception.Message
             Throw 'Company: Failed to fetch bulk company data'
         }
 
