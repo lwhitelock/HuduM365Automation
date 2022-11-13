@@ -1,16 +1,25 @@
 
 ### Functions ###
 ### The graph helper functions are based on the ones from Kelvin Tegelaar's CIPP project https://github.com/KelvinTegelaar/CIPP
-function New-GraphGetRequest ($uri, $tenantid, $scope, $AsApp, $noPagination, $Headers) {
+function New-GraphGetRequest {
+    Param(
+        $uri, 
+        $tenantid, 
+        $scope, 
+        $AsApp, 
+        $noPagination,
+        $Headers
+    ) 
 
     Write-Verbose "Using $($uri) as url"
     $nextURL = $uri
     $ReturnedData = do {
         try {
-            $Data = (Invoke-RestMethod -Uri $nextURL -Method GET -Headers $headers -ContentType "application/json; charset=utf-8")
+            $Data = (Invoke-RestMethod -Uri $nextURL -Method GET -Headers $headers -ContentType 'application/json; charset=utf-8')
             if ($data.value) { $data.value } else { ($Data) }
             if ($noPagination) { $nextURL = $null } else { $nextURL = $data.'@odata.nextLink' }                
-        } catch {
+        }
+        catch {
             $Message = ($_.ErrorDetails.Message | ConvertFrom-Json).error.message
             if ($null -eq $Message) { $Message = $($_.Exception.Message) }
             throw $Message
@@ -29,7 +38,7 @@ function Get-GraphToken($tenantid, $scope, $AsApp, $AppID, $refreshToken, $Retur
         client_secret = $env:ApplicationSecret
         scope         = $Scope
         refresh_token = $env:RefreshToken
-        grant_type    = "refresh_token"
+        grant_type    = 'refresh_token'
                     
     }
     if ($asApp -eq $true) {
@@ -37,7 +46,7 @@ function Get-GraphToken($tenantid, $scope, $AsApp, $AppID, $refreshToken, $Retur
             client_id     = $env:ApplicationId
             client_secret = $env:ApplicationSecret
             scope         = $Scope
-            grant_type    = "client_credentials"
+            grant_type    = 'client_credentials'
         }
     }
 
@@ -46,7 +55,7 @@ function Get-GraphToken($tenantid, $scope, $AsApp, $AppID, $refreshToken, $Retur
             client_id     = $appid
             refresh_token = $RefreshToken
             scope         = $Scope
-            grant_type    = "refresh_token"
+            grant_type    = 'refresh_token'
         }
     }
 
@@ -63,7 +72,8 @@ function New-ExoRequest ($tenantid, $cmdlet, $cmdParams) {
     $tenant = $tenantid
     if ($cmdParams) {
         $Params = $cmdParams
-    } else {
+    }
+    else {
         $Params = @{}
     }
     $ExoBody = @{
@@ -72,26 +82,26 @@ function New-ExoRequest ($tenantid, $cmdlet, $cmdParams) {
             Parameters = $Params
         }
     } | ConvertTo-Json
-    $ReturnedData = Invoke-RestMethod "https://outlook.office365.com/adminapi/beta/$($tenant)/InvokeCommand" -Method POST -Body $ExoBody -Headers $Headers -ContentType "application/json; charset=utf-8"
+    $ReturnedData = Invoke-RestMethod "https://outlook.office365.com/adminapi/beta/$($tenant)/InvokeCommand" -Method POST -Body $ExoBody -Headers $Headers -ContentType 'application/json; charset=utf-8'
     return $ReturnedData.value   
     
 }
 
 function New-GraphBulkRequest ($Requests, $tenantid, $Headers) {
-
     $URL = 'https://graph.microsoft.com/beta/$batch'
+    $headers['ConsistencyLevel'] = 'eventual'
 
     $ReturnedData = for ($i = 0; $i -lt $Requests.count; $i += 20) {                                                                                                                                              
         $req = @{}                
         # Use select to create hashtables of id, method and url for each call                                     
         $req['requests'] = ($Requests[$i..($i + 19)])
-        Invoke-RestMethod -Uri $URL -Method POST -Headers $headers -ContentType "application/json; charset=utf-8" -Body ($req | convertto-json)                                                                                                                                
+        Invoke-RestMethod -Uri $URL -Method POST -Headers $headers -ContentType 'application/json; charset=utf-8' -Body ($req | ConvertTo-Json)                                                                                                                                
     }
     
     foreach ($MoreData in $ReturnedData.Responses | Where-Object { $_.body.'@odata.nextLink' }) {
         $AdditionalValues = New-GraphGetRequest -Headers $Headers -uri $MoreData.body.'@odata.nextLink' -tenantid $TenantFilter
         $NewValues = [System.Collections.Generic.List[PSCustomObject]]$MoreData.body.value
-        $AdditionalValues | foreach-object { $NewValues.add($_) }
+        $AdditionalValues | ForEach-Object { $NewValues.add($_) }
         $MoreData.body.value = $NewValues
     }
 
@@ -135,8 +145,8 @@ function Get-LinkBlock($URL, $Icon, $Title) {
 function Get-AdaptiveColumn($Strings, $Title) {
     [System.Collections.Generic.List[PSCustomObject]]$Items = @()
     $Items.Add([PSCustomObject]@{
-            type   = "TextBlock"
-            weight = "Bolder"
+            type   = 'TextBlock'
+            weight = 'Bolder'
             text   = $Title
         })
 

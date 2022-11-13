@@ -102,7 +102,7 @@ try {
             @{
                 id     = 'Users'
                 method = 'GET'
-                url    = '/users'
+                url    = '/users?$filter=assignedLicenses/$count ne 0&$count=true'
             },
             @{
                 id     = 'AllRoles'
