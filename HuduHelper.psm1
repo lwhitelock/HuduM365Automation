@@ -93,11 +93,11 @@ function New-GraphBulkRequest ($Requests, $tenantid, $Headers) {
         $req = @{}                
         # Use select to create hashtables of id, method and url for each call                                     
         $req['requests'] = ($Requests[$i..($i + 19)])
-        Invoke-RestMethod -Uri $URL -Method POST -Headers $headers -ContentType 'application/json; charset=utf-8' -Body ($req | ConvertTo-Json)                                                                                                                                
+        Invoke-RestMethod -Uri $URL -Method POST -Headers $headers -ContentType 'application/json; charset=utf-8' -Body ($req | ConvertTo-Json -Depth 10)                                                                                                                                
     }
-    
+
+    $Headers['ConsistencyLevel'] = 'eventual'
     foreach ($MoreData in $ReturnedData.Responses | Where-Object { $_.body.'@odata.nextLink' }) {
-        $headers['ConsistencyLevel'] = 'eventual'
         $AdditionalValues = New-GraphGetRequest -Headers $Headers -uri $MoreData.body.'@odata.nextLink' -tenantid $TenantFilter
         $NewValues = [System.Collections.Generic.List[PSCustomObject]]$MoreData.body.value
         $AdditionalValues | ForEach-Object { $NewValues.add($_) }
