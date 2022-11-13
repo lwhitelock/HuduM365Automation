@@ -1,7 +1,7 @@
 param($Customer)
 
 New-HuduAPIKey $env:HuduAPIKey
-New-HuduBaseUrl $env:HuduBaseDomain
+New-HuduBaseURL $env:HuduBaseDomain
 
 $defaultdomain = $customer.DefaultDomainName
 
@@ -35,7 +35,7 @@ $EnableCIPP = [System.Convert]::ToBoolean($env:EnableCIPP)
 $CIPPURL = $env:CIPPURL
 
 try {
-    $hududomain = Get-HuduWebsites -name "https://$defaultdomain" -ea stop
+    $hududomain = Get-HuduWebsites -Name "https://$defaultdomain" -ea stop
     $domaincount = ($hududomain.id | Measure-Object).count
 
     if ($domaincount -eq 1) {
@@ -60,14 +60,14 @@ try {
             Throw 'Failed to authenticate to tenant'
         }
 
-        $PeopleLayout = Get-HuduAssetLayouts -name $env:PeopleLayoutName
-        $People = Get-HuduAssets -companyid $company_id -assetlayoutid $PeopleLayout.id
+        $PeopleLayout = Get-HuduAssetLayouts -Name $env:PeopleLayoutName
+        $People = Get-HuduAssets -CompanyId $company_id -AssetLayoutId $PeopleLayout.id
 
-        $DesktopsLayout = Get-HuduAssetLayouts -name $env:DesktopsName
-        $HuduDesktopDevices = Get-HuduAssets -companyid $company_id -assetlayoutid $DesktopsLayout.id
+        $DesktopsLayout = Get-HuduAssetLayouts -Name $env:DesktopsName
+        $HuduDesktopDevices = Get-HuduAssets -CompanyId $company_id -AssetLayoutId $DesktopsLayout.id
 
-        $MobilesLayout = Get-HuduAssetLayouts -name $env:MobilesName
-        $HuduMobileDevices = Get-HuduAssets -companyid $company_id -assetlayoutid $MobilesLayout.id
+        $MobilesLayout = Get-HuduAssetLayouts -Name $env:MobilesName
+        $HuduMobileDevices = Get-HuduAssets -CompanyId $company_id -AssetLayoutId $MobilesLayout.id
 
         try {
             $HuduDevices = $HuduDesktopDevices + $HuduMobileDevices
@@ -704,7 +704,7 @@ try {
                         $UserDevicesDetailsBlock = $null
                     }
 
-                    $HuduUser = $People | Where-Object { $_.primary_mail -eq $user.UserPrincipalName }
+                    $HuduUser = $People | Where-Object { $_.primary_mail -eq $user.UserPrincipalName -or ($_.cards.integration_name -eq 'cw_manage' -and $_.cards.data.communicationItems.communicationType -eq 'Email' -and $_.cards.data.communicationItems.value -eq $user.UserPrincipalName) }
 
                     [System.Collections.Generic.List[PSCustomObject]]$CIPPLinksFormatted = @()
                     if ($EnableCIPP) {
@@ -739,12 +739,12 @@ try {
                     
                     $HuduUserCount = ($HuduUser | Measure-Object).count
                     if ($HuduUserCount -eq 1) {
-                        $null = Set-HuduAsset -asset_id $HuduUser.id -name $HuduUser.name -company_id $company_id -asset_layout_id $PeopleLayout.id -fields $UserAssetFields
+                        $null = Set-HuduAsset -asset_id $HuduUser.id -Name $HuduUser.name -company_id $company_id -asset_layout_id $PeopleLayout.id -Fields $UserAssetFields
 
                     }
                     elseif ($HuduUserCount -eq 0) {
                         if ($CreateUsers -eq $True) {
-                            $HuduUser = (New-HuduAsset -name $User.DisplayName -company_id $company_id -asset_layout_id $PeopleLayout.id -fields $UserAssetFields -primary_mail $user.UserPrincipalName).asset
+                            $HuduUser = (New-HuduAsset -Name $User.DisplayName -company_id $company_id -asset_layout_id $PeopleLayout.id -Fields $UserAssetFields -primary_mail $user.UserPrincipalName).asset
                         }
                     }
                     else {
@@ -854,7 +854,7 @@ try {
                     $HuduDevice = $HuduDevices | Where-Object { $_.name -eq $device.deviceName -or $_.cards.data.name -contains $device.deviceName }
                 }
                 else {
-                    $HuduDevice = $HuduDevices | Where-Object { $_.primary_serial -eq $device.serialNumber -or $_.cards.data.serialNumber -contains $device.serialNumber }
+                    $HuduDevice = $HuduDevices | Where-Object { $_.primary_serial -eq $device.serialNumber -or ($_.cards.integration_name -eq 'cw_manage' -and $_.cards.data.serialNumber -eq $device.serialNumber) }
                 } 
 
                 [System.Collections.Generic.List[PSCustomObject]]$DeviceLinksFormatted = @()
@@ -883,7 +883,7 @@ try {
 
                 if ($HuduDevice) {
                     if (($HuduDevice | Measure-Object).count -eq 1) {                                  
-                        $null = Set-HuduAsset -asset_id $HuduDevice.id -name $HuduDevice.name -company_id $company_id -asset_layout_id $HuduDevice.asset_layout_id -fields $DeviceAssetFields -PrimarySerial $Device.serialNumber
+                        $null = Set-HuduAsset -asset_id $HuduDevice.id -Name $HuduDevice.name -company_id $company_id -asset_layout_id $HuduDevice.asset_layout_id -Fields $DeviceAssetFields -PrimarySerial $Device.serialNumber
                     }
                     else {
                         $CompanyResult.Errors.add("Device $($HuduDevice.name): Multiple devices matched on name or serial ($($device.serialNumber -join ', '))")
@@ -899,11 +899,11 @@ try {
                         $DeviceCreation = $CreateMobileDevices
                     }
                     if ($DeviceCreation -eq $true) {
-                        $HuduDevice = (New-HuduAsset -name $device.deviceName -company_id $company_id -asset_layout_id $DeviceLayoutID -fields $DeviceAssetFields -PrimarySerial $Device.serialNumber).asset
-                        $HuduUser = $People | Where-Object { $_.primary_mail -eq $Device.userPrincipalName }
+                        $HuduDevice = (New-HuduAsset -Name $device.deviceName -company_id $company_id -asset_layout_id $DeviceLayoutID -Fields $DeviceAssetFields -PrimarySerial $Device.serialNumber).asset
+                        $HuduUser = $People | Where-Object { $_.primary_mail -eq $Device.userPrincipalName -or ($_.cards.integration_name -eq 'cw_manage' -and $_.cards.data.communicationItems.communicationType -eq 'Email' -and $_.cards.data.communicationItems.value -eq $user.UserPrincipalName) }
                         if ($HuduUser) {
                             try {
-                                $null = New-HuduRelation -FromableType 'Asset' -FromableId $HuduUser.id -ToableType 'Asset' -ToableId $HuduDevice.id -ea stop
+                                $null = New-HuduRelation -FromableType 'Asset' -FromableID $HuduUser.id -ToableType 'Asset' -ToableID $HuduDevice.id -ea stop
                             }
                             catch {
                                 # No need to do anything here as its will be when relations already exist.
@@ -941,7 +941,7 @@ try {
 			 </div>"
       
         try {
-            $null = Set-HuduMagicDash -title "Microsoft 365 - $($customer.DisplayName)" -company_name $company_name -message "$($licensedUsers.count) Licensed Users" -icon 'fab fa-microsoft' -content $body -shade 'success'	
+            $null = Set-HuduMagicDash -Title "Microsoft 365 - $($customer.DisplayName)" -company_name $company_name -Message "$($licensedUsers.count) Licensed Users" -Icon 'fab fa-microsoft' -Content $body -Shade 'success'	
         }
         catch {
             $CompanyResult.Errors.add("Company: Failed to add Magic Dash to Company: $_")
@@ -949,7 +949,7 @@ try {
             
         if ($CreateInOverview -eq $true) {
             try {
-                $null = Set-HuduMagicDash -title "$($customer.DisplayName)" -company_name $OverviewCompany -message "$($licensedUsers.count) Licensed Users" -icon 'fab fa-microsoft' -content $body -shade 'success'	
+                $null = Set-HuduMagicDash -Title "$($customer.DisplayName)" -company_name $OverviewCompany -Message "$($licensedUsers.count) Licensed Users" -Icon 'fab fa-microsoft' -Content $body -Shade 'success'	
             }
             catch {
                 $CompanyResult.Errors.add("Company: Failed to add Magic Dash to Overview: $_")
@@ -961,13 +961,13 @@ try {
                 $domainstoimport = $RawDomains
                 foreach ($imp in $domainstoimport) {
                     $impdomain = $imp.id
-                    $huduimpdomain = Get-HuduWebsites -name "https://$impdomain"
+                    $huduimpdomain = Get-HuduWebsites -Name "https://$impdomain"
                     if ($($huduimpdomain.id.count) -eq 0) {
                         if ($monitorDomains) {
-                            $null = New-HuduWebsite -name "https://$impdomain" -notes $HuduNotes -paused 'false' -companyid $company_id -disabledns 'false' -disablessl 'false' -disablewhois 'false'
+                            $null = New-HuduWebsite -Name "https://$impdomain" -Notes $HuduNotes -Paused 'false' -CompanyId $company_id -DisableDNS 'false' -DisableSSL 'false' -DisableWhois 'false'
                         }
                         else {
-                            $null = New-HuduWebsite -name "https://$impdomain" -notes $HuduNotes -paused 'true' -companyid $company_id -disabledns 'true' -disablessl 'true' -disablewhois 'true'
+                            $null = New-HuduWebsite -Name "https://$impdomain" -Notes $HuduNotes -Paused 'true' -CompanyId $company_id -DisableDNS 'true' -DisableSSL 'true' -DisableWhois 'true'
                         }
 
                     }		
