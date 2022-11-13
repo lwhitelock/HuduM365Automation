@@ -100,9 +100,12 @@ try {
 
         [System.Collections.Generic.List[PSCustomObject]]$TenantRequests = @(
             @{
-                id     = 'Users'
-                method = 'GET'
-                url    = '/users?$filter=assignedLicenses/$count ne 0&$count=true'
+                id      = 'Users'
+                method  = 'GET'
+                url     = '/users$filter=assignedLicenses/$count ne 0&$count=true'
+                headers = @{
+                    ConsistencyLevel = 'eventual'
+                }
             },
             @{
                 id     = 'AllRoles'
