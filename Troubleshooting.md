@@ -2,7 +2,6 @@
 
 ## Microsoft Tokens have expired
 
-### Step 1
 1. Make sure you have the latest version of the code from the main repository. If you have forked your own version choose to sync with the main fork:
 
 ![image](https://user-images.githubusercontent.com/79275328/204080193-4983da88-6a25-4801-b756-63c6900bf4d5.png)
