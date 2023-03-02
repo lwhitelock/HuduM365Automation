@@ -6,6 +6,11 @@ This project utilizes some of the helper functions and approaches written by Kel
 
 
 ### Updates
+#### Version 1.3
+```
+Lots of updates from @JDuprey
+YOU MUST NOW ADD THE Exchange.Manage PERMISSION TO THE AZURE AD APP
+
 #### Version 1.2
 ```
 Simplified and Fixed Refresh Token Update
@@ -34,6 +39,7 @@ For this script you will need
 |Policy.Read.All|Application + Delegated|
 |Reports.Read.All|Application + Delegated|
 |SecurityEvents.Read.All|Application + Delegated|
+|Exchange.Manage|Application + Delegated|
 
 3. Hudu API Keys.
 4. M365 to Hudu Tenant mapping completed (Each default domain needs to be setup as a customer under the relevant tenant this script will help with that https://github.com/lwhitelock/HuduAutomation/blob/main/Hudu-M365-Links.ps1)
