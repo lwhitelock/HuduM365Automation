@@ -8,7 +8,7 @@ This project utilizes some of the helper functions and approaches written by Kel
 ### Updates
 #### Version 1.3
 ```
-Lots of updates from @JDuprey
+Lots of updates from @johnduprey
 YOU MUST NOW ADD THE Exchange.Manage PERMISSION TO THE AZURE AD APP
 
 #### Version 1.2
