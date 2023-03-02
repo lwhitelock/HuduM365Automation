@@ -67,7 +67,7 @@ try {
 
         Invoke-RestMethod @parameters
 
-        for ($i = 0; $i -lt $ErrorOutputs.count; $i += 20) {                                                                                                                                              
+        for ($i = 0; $i -lt $ErrorOutputs.count; $i += 20) {
             [System.Collections.Generic.List[PSCustomObject]]$AdaptiveBody = @()
 
             $CustomerHeading = [pscustomobject]@{
@@ -96,7 +96,7 @@ try {
             $CustomersWithErrors = $ErrorOutputs[$i..($i + 19)] | Where-Object { $_.errors } | Select-Object name, errors
 
             foreach ($Customer in $CustomersWithErrors) {
-                $ErrorParsed = $Customer.Errors | ForEach-Object { "- $_`n" }
+                $ErrorParsed = ($Customer.Errors | ForEach-Object { "- $_" }) -join "`n"
                 $Message = [pscustomobject]@{
                     type      = 'TextBlock'
                     text      = "**$($Customer.name)**`n$ErrorParsed"
@@ -135,7 +135,6 @@ try {
         }
 
     }
-}
-catch {
+} catch {
     Write-Host "Error sending webhook $($_.Exception.Message)"
 }
