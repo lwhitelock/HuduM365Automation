@@ -68,7 +68,6 @@ function Get-GraphToken($tenantid, $scope, $AsApp, $AppID, $refreshToken, $Retur
 function New-ExoRequest ($tenantid, $cmdlet, $cmdParams, $useSystemMailbox, $Anchor) {
     $token = Get-ClassicAPIToken -resource 'https://outlook.office365.com' -Tenantid $tenantid
 
-    $tenant = (get-tenants | Where-Object -Property defaultDomainName -EQ $tenantid).customerId
     if ($cmdParams) {
         $Params = $cmdParams
     } else {
@@ -99,7 +98,7 @@ function New-ExoRequest ($tenantid, $cmdlet, $cmdParams, $useSystemMailbox, $Anc
 
     }
     try {
-        $ReturnedData = Invoke-RestMethod "https://outlook.office365.com/adminapi/beta/$($tenant)/InvokeCommand" -Method POST -Body $ExoBody -Headers $Headers -ContentType 'application/json; charset=utf-8'
+        $ReturnedData = Invoke-RestMethod "https://outlook.office365.com/adminapi/beta/$($tenantid)/InvokeCommand" -Method POST -Body $ExoBody -Headers $Headers -ContentType 'application/json; charset=utf-8'
     } catch {
         $ReportedError = ($_.ErrorDetails | ConvertFrom-Json -ErrorAction SilentlyContinue)
         $Message = if ($ReportedError.error.details.message) { $ReportedError.error.details.message } else { $ReportedError.error.innererror.internalException.message }
