@@ -3,13 +3,13 @@
 ### The graph helper functions are based on the ones from Kelvin Tegelaar's CIPP project https://github.com/KelvinTegelaar/CIPP
 function New-GraphGetRequest {
     Param(
-        $uri, 
-        $tenantid, 
-        $scope, 
-        $AsApp, 
+        $uri,
+        $tenantid,
+        $scope,
+        $AsApp,
         $noPagination,
         $Headers
-    ) 
+    )
 
     Write-Verbose "Using $($uri) as url"
     $nextURL = $uri
@@ -17,16 +17,15 @@ function New-GraphGetRequest {
         try {
             $Data = (Invoke-RestMethod -Uri $nextURL -Method GET -Headers $headers -ContentType 'application/json; charset=utf-8')
             if ($data.value) { $data.value } else { ($Data) }
-            if ($noPagination) { $nextURL = $null } else { $nextURL = $data.'@odata.nextLink' }                
-        }
-        catch {
+            if ($noPagination) { $nextURL = $null } else { $nextURL = $data.'@odata.nextLink' }
+        } catch {
             $Message = ($_.ErrorDetails.Message | ConvertFrom-Json).error.message
             if ($null -eq $Message) { $Message = $($_.Exception.Message) }
             throw $Message
         }
     } until ($null -eq $NextURL)
-   
-    return $ReturnedData   
+
+    return $ReturnedData
 
 }
 
@@ -39,7 +38,7 @@ function Get-GraphToken($tenantid, $scope, $AsApp, $AppID, $refreshToken, $Retur
         scope         = $Scope
         refresh_token = $env:RefreshToken
         grant_type    = 'refresh_token'
-                    
+
     }
     if ($asApp -eq $true) {
         $AuthBody = @{
@@ -66,34 +65,57 @@ function Get-GraphToken($tenantid, $scope, $AsApp, $AppID, $refreshToken, $Retur
     return $header
 }
 
+function New-ExoRequest ($tenantid, $cmdlet, $cmdParams, $useSystemMailbox, $Anchor) {
+    $token = Get-ClassicAPIToken -resource 'https://outlook.office365.com' -Tenantid $tenantid
 
-function New-ExoRequest ($tenantid, $cmdlet, $cmdParams) {
-    $Headers = Get-GraphToken -AppID 'a0c73c16-a7e3-4564-9a95-2bdf47383716' -RefreshToken $env:ExchangeRefreshToken -Scope 'https://outlook.office365.com/.default' -Tenantid $tenantid 
-    $tenant = $tenantid
+    $tenant = (get-tenants | Where-Object -Property defaultDomainName -EQ $tenantid).customerId
     if ($cmdParams) {
         $Params = $cmdParams
-    }
-    else {
+    } else {
         $Params = @{}
     }
-    $ExoBody = @{
+    $ExoBody = ConvertTo-Json -Depth 5 -InputObject @{
         CmdletInput = @{
             CmdletName = $cmdlet
             Parameters = $Params
         }
-    } | ConvertTo-Json
-    $ReturnedData = Invoke-RestMethod "https://outlook.office365.com/adminapi/beta/$($tenant)/InvokeCommand" -Method POST -Body $ExoBody -Headers $Headers -ContentType 'application/json; charset=utf-8'
-    return $ReturnedData.value   
-    
+    }
+    if (!$Anchor) {
+        if ($cmdparams.Identity) { $Anchor = $cmdparams.Identity }
+        if ($cmdparams.anr) { $Anchor = $cmdparams.anr }
+        if ($cmdparams.User) { $Anchor = $cmdparams.User }
+
+        if (!$Anchor -or $useSystemMailbox) {
+            $OnMicrosoft = (New-GraphGetRequest -uri 'https://graph.microsoft.com/beta/domains?$top=999' -tenantid $tenantid | Where-Object -Property isInitial -EQ $true).id
+            $anchor = "UPN:SystemMailbox{bb558c35-97f1-4cb9-8ff7-d53741dc928c}@$($OnMicrosoft)"
+
+        }
+    }
+    Write-Host "Using $Anchor"
+    $Headers = @{
+        Authorization     = "Bearer $($token.access_token)"
+        Prefer            = 'odata.maxpagesize = 1000'
+        'X-AnchorMailbox' = $anchor
+
+    }
+    try {
+        $ReturnedData = Invoke-RestMethod "https://outlook.office365.com/adminapi/beta/$($tenant)/InvokeCommand" -Method POST -Body $ExoBody -Headers $Headers -ContentType 'application/json; charset=utf-8'
+    } catch {
+        $ReportedError = ($_.ErrorDetails | ConvertFrom-Json -ErrorAction SilentlyContinue)
+        $Message = if ($ReportedError.error.details.message) { $ReportedError.error.details.message } else { $ReportedError.error.innererror.internalException.message }
+        if ($Message -eq $null) { $Message = $($_.Exception.Message) }
+        throw $Message
+    }
+    return $ReturnedData.value
 }
 
 function New-GraphBulkRequest ($Requests, $tenantid, $Headers) {
     $URL = 'https://graph.microsoft.com/beta/$batch'
-    $ReturnedData = for ($i = 0; $i -lt $Requests.count; $i += 20) {                                                                                                                                              
-        $req = @{}                
-        # Use select to create hashtables of id, method and url for each call                                     
+    $ReturnedData = for ($i = 0; $i -lt $Requests.count; $i += 20) {
+        $req = @{}
+        # Use select to create hashtables of id, method and url for each call
         $req['requests'] = ($Requests[$i..($i + 19)])
-        Invoke-RestMethod -Uri $URL -Method POST -Headers $headers -ContentType 'application/json; charset=utf-8' -Body ($req | ConvertTo-Json -Depth 10)                                                                                                                                
+        Invoke-RestMethod -Uri $URL -Method POST -Headers $headers -ContentType 'application/json; charset=utf-8' -Body ($req | ConvertTo-Json -Depth 10)
     }
 
     $Headers['ConsistencyLevel'] = 'eventual'
