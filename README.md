@@ -6,6 +6,13 @@ This project utilizes some of the helper functions and approaches written by Kel
 
 
 ### Updates
+#### Version 1.3
+```
+Lots of updates from @johnduprey
+YOU MUST NOW ADD THE Exchange.Manage PERMISSION TO THE AZURE AD APP
+Run from Package mode is recommended to improve performance and reduce the number of writes to the storage account (see below)
+```
+
 #### Version 1.2
 ```
 Simplified and Fixed Refresh Token Update
@@ -22,7 +29,7 @@ For this script you will need
 2. The following permissions added to your SAM application and granted admin consent:
 
 | Permission | Type |
-|--|--|
+|---|---|
 |Application.Read.All|Application + Delegated|
 |AuditLog.Read.All|Delegated|
 |DeviceManagementApps.Read.All|Application + Delegated|
@@ -34,6 +41,7 @@ For this script you will need
 |Policy.Read.All|Application + Delegated|
 |Reports.Read.All|Application + Delegated|
 |SecurityEvents.Read.All|Application + Delegated|
+|(Office 365 Exchange Online) Exchange.Manage|Application + Delegated|
 
 3. Hudu API Keys.
 4. M365 to Hudu Tenant mapping completed (Each default domain needs to be setup as a customer under the relevant tenant this script will help with that https://github.com/lwhitelock/HuduAutomation/blob/main/Hudu-M365-Links.ps1)
@@ -44,6 +52,8 @@ For this script you will need
 
 ### Installation
 If you wish to customise the code you can fork this repository and then deploy to Azure. If you would like to use the default version which will run the syncronisation daily at midnight, you can deploy it with this button:
+
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flwhitelock%2FHuduM365Automation%2Fmaster%2FDeployment%2FAzureDeployment.json)
 
 #### Custom CSS
 Go to Admin -> Design -> Custom CSS and Add in:
@@ -94,8 +104,6 @@ Go to Admin -> Design -> Custom CSS and Add in:
 }
 ```
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flwhitelock%2FHuduM365Automation%2Fmaster%2FDeployment%2FAzureDeployment.json)
-
 ### Settings
 #### Core Settings
 | Setting Name | Description |
@@ -144,6 +152,19 @@ To run the function manually you can use this process:
 4. Click on the Get Function URL button
 5. Paste the URL into a browser. You should recieve a JSON response. 
 6. To check the status you can copy and paste the statusQueryGetUri into a browser.
+
+##### Run from Package mode
+1. Click on "Function app Configuration"
+2. Click on "New Application Setting"
+3. Add an application setting with the name "WEBSITE_RUN_FROM_PACKAGE" and the value "1"
+4. Click Save at the top
+5. Click on Deployment Center
+6. Click on "Disconnect"
+7. Select the source "Github"
+8. Login if required
+9. Select the Organisation, Repository, and Branch you want for your HuduM365Automation fork. Click on "Add a workflow". Do not change any other settings.
+10. Click save at the top.
+11. Restart the Function App
 
 ##### Debugging
 At the end of the function running a report will be sent to Teams. This should give you details on issues that need to be fixed.
