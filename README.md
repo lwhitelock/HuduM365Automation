@@ -56,11 +56,11 @@ Go to Admin -> Design -> Custom CSS and Add in:
 	min-width: 400px;
 	box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
 }
-.card__item h2, p{
+.card__item h2, .card__item p{
 	font-size: 0.8em;
 	font-family: sans-serif;
 }
-.card__item th, td {
+.card__item th, .card__item td {
 	padding: 5px 5px;
 	width:auto;
 }
