@@ -109,6 +109,22 @@ function New-ExoRequest ($tenantid, $cmdlet, $cmdParams, $useSystemMailbox, $Anc
     return $ReturnedData.value
 }
 
+function Get-ClassicAPIToken($tenantID, $Resource) {
+    Write-Host 'Using classic'
+    $uri = "https://login.microsoftonline.com/$($TenantID)/oauth2/token"
+    $Body = @{
+        client_id     = $env:ApplicationID
+        client_secret = $env:ApplicationSecret
+        resource      = $Resource
+        refresh_token = $env:RefreshToken
+        grant_type    = 'refresh_token'
+
+    }
+
+    $token = Invoke-RestMethod $uri -Body $body -ContentType 'application/x-www-form-urlencoded' -ErrorAction SilentlyContinue -Method post
+    return $token
+}
+
 function New-GraphBulkRequest ($Requests, $tenantid, $Headers) {
     $URL = 'https://graph.microsoft.com/beta/$batch'
     $ReturnedData = for ($i = 0; $i -lt $Requests.count; $i += 20) {
