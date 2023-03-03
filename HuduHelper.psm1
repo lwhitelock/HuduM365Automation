@@ -8,23 +8,30 @@ function New-GraphGetRequest {
         $scope,
         $AsApp,
         $noPagination,
-        $Headers
+        $NoAuthCheck,
+        [switch]$ComplexFilter
     )
 
+    if ($scope -eq 'ExchangeOnline') {
+        $AccessToken = Get-ClassicAPIToken -resource 'https://outlook.office365.com' -Tenantid $tenantid
+        $headers = @{ Authorization = "Bearer $($AccessToken.access_token)" }
+    } else {
+        $headers = Get-GraphToken -tenantid $tenantid -scope $scope -AsApp $asapp
+    }
+
+    if ($ComplexFilter) {
+        $headers['ConsistencyLevel'] = 'eventual'
+    }
     Write-Verbose "Using $($uri) as url"
     $nextURL = $uri
-    $ReturnedData = do {
-        try {
-            $Data = (Invoke-RestMethod -Uri $nextURL -Method GET -Headers $headers -ContentType 'application/json; charset=utf-8')
-            if ($data.value) { $data.value } else { ($Data) }
-            if ($noPagination) { $nextURL = $null } else { $nextURL = $data.'@odata.nextLink' }
-        } catch {
-            $Message = ($_.ErrorDetails.Message | ConvertFrom-Json).error.message
-            if ($null -eq $Message) { $Message = $($_.Exception.Message) }
-            throw $Message
-        }
-    } until ($null -eq $NextURL)
 
+    $ReturnedData = do {
+
+        $Data = (Invoke-RestMethod -Uri $nextURL -Method GET -Headers $headers -ContentType 'application/json; charset=utf-8')
+        if ($data.value) { $data.value } else { ($Data) }
+        if ($noPagination) { $nextURL = $null } else { $nextURL = $data.'@odata.nextLink' }
+
+    } until ($null -eq $NextURL)
     return $ReturnedData
 
 }
@@ -87,7 +94,6 @@ function New-ExoRequest ($tenantid, $cmdlet, $cmdParams, $useSystemMailbox, $Anc
         if (!$Anchor -or $useSystemMailbox) {
             $OnMicrosoft = (New-GraphGetRequest -uri 'https://graph.microsoft.com/beta/domains?$top=999' -tenantid $tenantid | Where-Object -Property isInitial -EQ $true).id
             $anchor = "UPN:SystemMailbox{bb558c35-97f1-4cb9-8ff7-d53741dc928c}@$($OnMicrosoft)"
-
         }
     }
     Write-Host "Using $Anchor"
@@ -109,7 +115,7 @@ function New-ExoRequest ($tenantid, $cmdlet, $cmdParams, $useSystemMailbox, $Anc
 }
 
 function Get-ClassicAPIToken($tenantID, $Resource) {
-    Write-Host 'Using classic'
+    #Write-Host 'Using classic'
     $uri = "https://login.microsoftonline.com/$($TenantID)/oauth2/token"
     $Body = @{
         client_id     = $env:ApplicationID
@@ -133,9 +139,8 @@ function New-GraphBulkRequest ($Requests, $tenantid, $Headers) {
         Invoke-RestMethod -Uri $URL -Method POST -Headers $headers -ContentType 'application/json; charset=utf-8' -Body ($req | ConvertTo-Json -Depth 10)
     }
 
-    $Headers['ConsistencyLevel'] = 'eventual'
     foreach ($MoreData in $ReturnedData.Responses | Where-Object { $_.body.'@odata.nextLink' }) {
-        $AdditionalValues = New-GraphGetRequest -Headers $Headers -uri $MoreData.body.'@odata.nextLink' -tenantid $TenantFilter
+        $AdditionalValues = New-GraphGetRequest -ComplexFilter -uri $MoreData.body.'@odata.nextLink' -tenantid $TenantFilter
         $NewValues = [System.Collections.Generic.List[PSCustomObject]]$MoreData.body.value
         $AdditionalValues | ForEach-Object { $NewValues.add($_) }
         $MoreData.body.value = $NewValues

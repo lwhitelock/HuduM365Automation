@@ -3,9 +3,11 @@ Param($Outputs)
 try {
     $WebhookURL = $env:WebhookURL
     if ($WebhookURL) {
-        $ErrorOutputs = $Outputs | Where-Object { $_.Errors }
-        $ErrorOutputs | ForEach-Object { $_ | Add-Member -MemberType NoteProperty -Name 'ErrorCount' -Value "$(($_.errors | Measure-Object).count)" }
 
+        $ErrorOutputs = $Outputs | Where-Object { $_.Errors }
+        $ErrorOutputs | ForEach-Object { $_ | Add-Member -MemberType NoteProperty -Name 'ErrorCount' -Value $(($_.Errors | Measure-Object).count) }
+
+        #Write-Output "Send notification: $($ErrorOutputs | ConvertTo-Json)"
         $AdaptiveCard = [pscustomobject]@{
             '$schema' = 'http://adaptivecards.io/schemas/adaptive-card.json'
             type      = 'AdaptiveCard'
@@ -66,8 +68,8 @@ try {
         }
 
         Invoke-RestMethod @parameters
-
-        for ($i = 0; $i -lt $ErrorOutputs.count; $i += 20) {
+        $ErrorCount = ($ErrorOutputs | Measure-Object).Count
+        for ($i = 0; $i -lt $ErrorCount; $i += 20) {
             [System.Collections.Generic.List[PSCustomObject]]$AdaptiveBody = @()
 
             $CustomerHeading = [pscustomobject]@{
@@ -83,7 +85,7 @@ try {
 
             [System.Collections.Generic.List[PSCustomObject]]$CustomerDetailsColumns = @()
 
-            $CustomerDetailsColumns.add((Get-AdaptiveColumn -Strings $ErrorOutputs[$i..($i + 19)].name -Title 'Customer'))
+            $CustomerDetailsColumns.add((Get-AdaptiveColumn -Strings $ErrorOutputs[$i..($i + 19)].Name -Title 'Customer'))
             $CustomerDetailsColumns.add((Get-AdaptiveColumn -Strings $ErrorOutputs[$i..($i + 19)].ErrorCount -Title 'Errors'))
 
             $AdaptiveBody.add([pscustomobject]@{
@@ -92,18 +94,21 @@ try {
                     width   = 'strech'
                 })
 
-
-            $CustomersWithErrors = $ErrorOutputs[$i..($i + 19)] | Where-Object { $_.errors } | Select-Object name, errors
+            #Write-Output "ErrorOutputs: $($ErrorOutputs | ConvertTo-Json -Depth 10)"
+            $CustomersWithErrors = $ErrorOutputs | Select-Object -First 20 -Skip $i Name, Errors
 
             foreach ($Customer in $CustomersWithErrors) {
+                Write-Output "Customer: $($Customer | ConvertTo-Json -Depth 10)"
                 $ErrorParsed = ($Customer.Errors | ForEach-Object { "- $_" }) -join "`n"
                 $Message = [pscustomobject]@{
                     type      = 'TextBlock'
-                    text      = "**$($Customer.name)**`n$ErrorParsed"
+                    text      = "**$($Customer.Name)**`n$ErrorParsed"
                     wrap      = $true
                     seperator = $true
                 }
                 $AdaptiveBody.add($Message)
+
+                #Write-Output ($Message | ConvertTo-Json -Depth 10)
             }
 
 

@@ -14,8 +14,7 @@ try {
     }
     return $Customers
 
-}
-catch {
+} catch {
     Write-Host "Error fetching customers: $_"
 
     $WebhookURL = $env:WebhookURL
@@ -64,6 +63,6 @@ catch {
         }
     }
     default {
-        Write-Host "No webhook configured"
+        Write-Host 'No webhook configured'
     }
 }

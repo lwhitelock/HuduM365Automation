@@ -377,7 +377,7 @@ try {
         }
 
         try {
-            $OneDriveDetails = New-GraphGetRequest -Headers $AuthHeaders -uri "https://graph.microsoft.com/beta/reports/getOneDriveUsageAccountDetail(period='D7')" -tenantid $TenantFilter | ConvertFrom-Csv
+            $OneDriveDetails = New-GraphGetRequest -uri "https://graph.microsoft.com/beta/reports/getOneDriveUsageAccountDetail(period='D7')" -tenantid $TenantFilter | ConvertFrom-Csv
         } catch {
             $CompanyResult.Errors.add("Company: Unable to fetch One Drive Details $_")
             $OneDriveDetails = $null
@@ -385,7 +385,7 @@ try {
 
 
         try {
-            $CASFull = New-GraphGetRequest -Headers $AuthHeaders -uri "https://outlook.office365.com/adminapi/beta/$($tenantfilter)/CasMailbox" -Tenantid $tenantfilter -scope ExchangeOnline -noPagination $true
+            $CASFull = New-GraphGetRequest -uri "https://outlook.office365.com/adminapi/beta/$($tenantfilter)/CasMailbox" -Tenantid $tenantfilter -scope ExchangeOnline -noPagination $true
         } catch {
             $CASFull = $null
             $CompanyResult.Errors.add("Company: Unable to fetch CAS Mailbox Details $_")
@@ -402,7 +402,7 @@ try {
 
 
         try {
-            $MailboxStatsFull = New-GraphGetRequest -Headers $AuthHeaders -uri "https://graph.microsoft.com/v1.0/reports/getMailboxUsageDetail(period='D7')" -tenantid $TenantFilter | ConvertFrom-Csv
+            $MailboxStatsFull = New-GraphGetRequest -uri "https://graph.microsoft.com/v1.0/reports/getMailboxUsageDetail(period='D7')" -tenantid $TenantFilter | ConvertFrom-Csv
         } catch {
             $CompanyResult.Errors.add("Company: Unable to fetch Mailbox Statistic Details $_")
             $MailboxStatsFull = $null
@@ -450,7 +450,7 @@ try {
                     $StatsRequest = $MailboxStatsFull | Where-Object { $_.'User Principal Name' -eq $User.UserPrincipalName }
 
                     try {
-                        $PermsRequest = New-GraphGetRequest -Headers $AuthHeaders -uri "https://outlook.office365.com/adminapi/beta/$($tenantfilter)/Mailbox('$($User.ID)')/MailboxPermission" -Tenantid $tenantfilter -scope ExchangeOnline -noPagination $true
+                        $PermsRequest = New-GraphGetRequest -uri "https://outlook.office365.com/adminapi/beta/$($tenantfilter)/Mailbox('$($User.ID)')/MailboxPermission" -Tenantid $tenantfilter -scope ExchangeOnline -noPagination $true
                     } catch {
                         $PermsRequest = $null
                     }
