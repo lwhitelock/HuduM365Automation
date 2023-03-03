@@ -26,11 +26,15 @@ function New-GraphGetRequest {
     $nextURL = $uri
 
     $ReturnedData = do {
-
-        $Data = (Invoke-RestMethod -Uri $nextURL -Method GET -Headers $headers -ContentType 'application/json; charset=utf-8')
-        if ($data.value) { $data.value } else { ($Data) }
-        if ($noPagination) { $nextURL = $null } else { $nextURL = $data.'@odata.nextLink' }
-
+        try {
+            $Data = (Invoke-RestMethod -Uri $nextURL -Method GET -Headers $headers -ContentType 'application/json; charset=utf-8')
+            if ($data.value) { $data.value } else { ($Data) }
+            if ($noPagination) { $nextURL = $null } else { $nextURL = $data.'@odata.nextLink' }
+        } catch {
+            $Message = ($_.ErrorDetails.Message | ConvertFrom-Json -ErrorAction SilentlyContinue).error.message
+            if ($null -eq $Message) { $Message = $($_.Exception.Message) }
+            throw $Message
+        }
     } until ($null -eq $NextURL)
     return $ReturnedData
 
