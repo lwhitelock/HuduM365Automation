@@ -26,6 +26,7 @@ function New-GraphGetRequest {
     $nextURL = $uri
 
     $ReturnedData = do {
+
         $Data = (Invoke-RestMethod -Uri $nextURL -Method GET -Headers $headers -ContentType 'application/json; charset=utf-8')
         if ($data.value) { $data.value } else { ($Data) }
         if ($noPagination) { $nextURL = $null } else { $nextURL = $data.'@odata.nextLink' }
@@ -137,7 +138,7 @@ function New-GraphBulkRequest ($Requests, $tenantid, $Headers) {
         $req['requests'] = ($Requests[$i..($i + 19)])
         Invoke-RestMethod -Uri $URL -Method POST -Headers $headers -ContentType 'application/json; charset=utf-8' -Body ($req | ConvertTo-Json -Depth 10)
     }
-
+    $headers = Get-GraphToken -tenantid $tenantid -scope $scope -AsApp $asapp
     $Headers['ConsistencyLevel'] = 'eventual'
     foreach ($MoreData in $ReturnedData.Responses | Where-Object { $_.body.'@odata.nextLink' }) {
         $AdditionalValues = New-GraphGetRequest -Headers $Headers -uri $MoreData.body.'@odata.nextLink' -tenantid $TenantFilter

@@ -139,7 +139,7 @@ try {
         )
 
         try {
-            $TenantResults = New-GraphBulkRequest -Headers $AuthHeaders -Requests $TenantRequests -tenantid $TenantFilter
+            $TenantResults = New-GraphBulkRequest -Requests $TenantRequests -tenantid $TenantFilter
         } catch {
             Write-Host $_.Exception.Message
             Throw 'Company: Failed to fetch bulk company data'
@@ -163,7 +163,7 @@ try {
         }
 
         try {
-            $MemberReturn = New-GraphBulkRequest -Headers $AuthHeaders -Requests $RolesRequestArray -tenantid $TenantFilter
+            $MemberReturn = New-GraphBulkRequest -Requests $RolesRequestArray -tenantid $TenantFilter
         } catch {
             $CompanyResult.Errors.add("Company: Unable to fetch roles $_")
             $MemberReturn = $null
@@ -265,7 +265,7 @@ try {
         }
 
         try {
-            $PolicyReturn = New-GraphBulkRequest -Headers $AuthHeaders -Requests $PolicyRequestArray -tenantid $TenantFilter
+            $PolicyReturn = New-GraphBulkRequest -Requests $PolicyRequestArray -tenantid $TenantFilter
         } catch {
             $CompanyResult.Errors.add("Company: Unable to fetch Policies $_")
             $PolicyReturn = $null
@@ -290,7 +290,7 @@ try {
                 })
         }
         try {
-            $InstalledAppDetailsReturn = New-GraphBulkRequest -Headers $AuthHeaders -Requests $RequestArray -tenantid $TenantFilter
+            $InstalledAppDetailsReturn = New-GraphBulkRequest -Requests $RequestArray -tenantid $TenantFilter
         } catch {
             $CompanyResult.Errors.add("Company: Unable to fetch Installed Device Details $_")
             $InstalledAppDetailsReturn = $null
@@ -315,7 +315,7 @@ try {
                 })
         }
         try {
-            $GroupMembersReturn = New-GraphBulkRequest -Headers $AuthHeaders -Requests $GroupRequestArray -tenantid $TenantFilter
+            $GroupMembersReturn = New-GraphBulkRequest -Requests $GroupRequestArray -tenantid $TenantFilter
         } catch {
             $CompanyResult.Errors.add("Company: Unable to fetch Group Membership Details $_")
             $GroupMembersReturn = $null
@@ -377,7 +377,7 @@ try {
         }
 
         try {
-            $OneDriveDetails = New-GraphGetRequest -Headers $AuthHeaders -uri "https://graph.microsoft.com/beta/reports/getOneDriveUsageAccountDetail(period='D7')" -tenantid $TenantFilter | ConvertFrom-Csv
+            $OneDriveDetails = New-GraphGetRequest -uri "https://graph.microsoft.com/beta/reports/getOneDriveUsageAccountDetail(period='D7')" -tenantid $TenantFilter | ConvertFrom-Csv
         } catch {
             $CompanyResult.Errors.add("Company: Unable to fetch One Drive Details $_")
             $OneDriveDetails = $null
@@ -385,7 +385,7 @@ try {
 
 
         try {
-            $CASFull = New-GraphGetRequest -Headers $AuthHeaders -uri "https://outlook.office365.com/adminapi/beta/$($tenantfilter)/CasMailbox" -Tenantid $tenantfilter -scope ExchangeOnline -noPagination $true
+            $CASFull = New-GraphGetRequest -uri "https://outlook.office365.com/adminapi/beta/$($tenantfilter)/CasMailbox" -Tenantid $tenantfilter -scope ExchangeOnline -noPagination $true
         } catch {
             $CASFull = $null
             $CompanyResult.Errors.add("Company: Unable to fetch CAS Mailbox Details $_")
@@ -402,7 +402,7 @@ try {
 
 
         try {
-            $MailboxStatsFull = New-GraphGetRequest -Headers $AuthHeaders -uri "https://graph.microsoft.com/v1.0/reports/getMailboxUsageDetail(period='D7')" -tenantid $TenantFilter | ConvertFrom-Csv
+            $MailboxStatsFull = New-GraphGetRequest -uri "https://graph.microsoft.com/v1.0/reports/getMailboxUsageDetail(period='D7')" -tenantid $TenantFilter | ConvertFrom-Csv
         } catch {
             $CompanyResult.Errors.add("Company: Unable to fetch Mailbox Statistic Details $_")
             $MailboxStatsFull = $null
@@ -450,7 +450,7 @@ try {
                     $StatsRequest = $MailboxStatsFull | Where-Object { $_.'User Principal Name' -eq $User.UserPrincipalName }
 
                     try {
-                        $PermsRequest = New-GraphGetRequest -Headers $AuthHeaders -uri "https://outlook.office365.com/adminapi/beta/$($tenantfilter)/Mailbox('$($User.ID)')/MailboxPermission" -Tenantid $tenantfilter -scope ExchangeOnline -noPagination $true
+                        $PermsRequest = New-GraphGetRequest -uri "https://outlook.office365.com/adminapi/beta/$($tenantfilter)/Mailbox('$($User.ID)')/MailboxPermission" -Tenantid $tenantfilter -scope ExchangeOnline -noPagination $true
                     } catch {
                         $PermsRequest = $null
                     }
