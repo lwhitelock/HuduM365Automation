@@ -115,7 +115,7 @@ function New-ExoRequest ($tenantid, $cmdlet, $cmdParams, $useSystemMailbox, $Anc
 }
 
 function Get-ClassicAPIToken($tenantID, $Resource) {
-    Write-Host 'Using classic'
+    #Write-Host 'Using classic'
     $uri = "https://login.microsoftonline.com/$($TenantID)/oauth2/token"
     $Body = @{
         client_id     = $env:ApplicationID

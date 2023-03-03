@@ -139,7 +139,7 @@ try {
         )
 
         try {
-            $TenantResults = New-GraphBulkRequest -Requests $TenantRequests -tenantid $TenantFilter
+            $TenantResults = New-GraphBulkRequest -Headers $AuthHeaders -Requests $TenantRequests -tenantid $TenantFilter
         } catch {
             Write-Host $_.Exception.Message
             Throw 'Company: Failed to fetch bulk company data'
@@ -163,7 +163,7 @@ try {
         }
 
         try {
-            $MemberReturn = New-GraphBulkRequest -Requests $RolesRequestArray -tenantid $TenantFilter
+            $MemberReturn = New-GraphBulkRequest -Headers $AuthHeaders -Requests $RolesRequestArray -tenantid $TenantFilter
         } catch {
             $CompanyResult.Errors.add("Company: Unable to fetch roles $_")
             $MemberReturn = $null
@@ -265,7 +265,7 @@ try {
         }
 
         try {
-            $PolicyReturn = New-GraphBulkRequest -Requests $PolicyRequestArray -tenantid $TenantFilter
+            $PolicyReturn = New-GraphBulkRequest -Headers $AuthHeaders -Requests $PolicyRequestArray -tenantid $TenantFilter
         } catch {
             $CompanyResult.Errors.add("Company: Unable to fetch Policies $_")
             $PolicyReturn = $null
@@ -290,7 +290,7 @@ try {
                 })
         }
         try {
-            $InstalledAppDetailsReturn = New-GraphBulkRequest -Requests $RequestArray -tenantid $TenantFilter
+            $InstalledAppDetailsReturn = New-GraphBulkRequest -Headers $AuthHeaders -Requests $RequestArray -tenantid $TenantFilter
         } catch {
             $CompanyResult.Errors.add("Company: Unable to fetch Installed Device Details $_")
             $InstalledAppDetailsReturn = $null
@@ -315,7 +315,7 @@ try {
                 })
         }
         try {
-            $GroupMembersReturn = New-GraphBulkRequest -Requests $GroupRequestArray -tenantid $TenantFilter
+            $GroupMembersReturn = New-GraphBulkRequest -Headers $AuthHeaders -Requests $GroupRequestArray -tenantid $TenantFilter
         } catch {
             $CompanyResult.Errors.add("Company: Unable to fetch Group Membership Details $_")
             $GroupMembersReturn = $null
